@@ -9,10 +9,11 @@ public class window {
 		theGUI.setSize(900, 900);
 		theGUI.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		theGUI.setIconImage(new ImageIcon().getImage());
-		grid panel = new grid(Color.white, 600, 400);
+		grid panel = new grid(Color.white, 640, 480);
 		theGUI.addKeyListener(panel);
 		Container pane = theGUI.getContentPane();
 		pane.add(panel);
+		
 		theGUI.pack();	//Important function to keep interior dimensions even with the saiz of window.
 		theGUI.setVisible(true);
 	}

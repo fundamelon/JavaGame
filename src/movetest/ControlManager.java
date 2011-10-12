@@ -8,14 +8,17 @@ public class ControlManager {
 	private char KEY_MOVE_EAST = "D".charAt(0);
 	private char KEY_MOVE_WEST = "A".charAt(0);
 	
+	private double smoothTickX = 0, smoothTickY = 0, smoothAmt = 0.1;
+	private boolean anyKeysPressed = false;
+	
 	private PlayerEnt player;
 	
-	public ControlManager(PlayerEnt oldPlayer) {
+	public ControlManager(grid panel, PlayerEnt oldPlayer) {
 		player = oldPlayer;
 	}
 	
 	
-	private double playerMoveAmt = 0.25;
+	private double playerMoveAmt = 0.07;
 	
 	private javax.swing.Timer playerMoveClk;
 	
@@ -31,6 +34,7 @@ public class ControlManager {
 	
 	public void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
 		double dx=0, dy=0;
+
 		if(keys[KEY_MOVE_NORTH])
 			dy = dy - playerMoveAmt;
 		if(keys[KEY_MOVE_SOUTH])
@@ -39,7 +43,22 @@ public class ControlManager {
 			dx = dx + playerMoveAmt;
 		if(keys[KEY_MOVE_WEST])
 			dx = dx - playerMoveAmt;
+
+		if(dx == 0 && smoothTickX > 0)
+			smoothTickX-=0.1;
+		else if(dx != 0 && smoothTickX<1)
+			smoothTickX+=0.1;
 		
+		if(dy == 0 && smoothTickY > 0)
+			smoothTickY-=0.1;
+		else if(dy != 0 && smoothTickY<1)
+			smoothTickY+=0.1;
+		
+		dx *= smoothTickX;
+		dy *= smoothTickY;
+		
+		if(!anyKeysPressed)
+			playerMoveClk.stop();
 	//	DEBUG: System.out.println("Player asked to move by "+dx+", "+dy);
 		player.move(dx, dy);
 		
@@ -49,23 +68,31 @@ public class ControlManager {
 	boolean[] keys = new boolean[525];
 	
 	public void keyDown(int kC) {
+		anyKeysPressed = true;
+		
 		if(!keys[kC]) {						//Check if they key hasn't been already registered - prevents glitches.
 		
 			//	DEBUG: System.out.println("Keydown event. "+(char)kC+" is now active.");
 			
 			keys[kC] = true;				//Add the key to a boolean array.
-			movePlayerByAmt();			//Comment this out to remove instantaneous movement.  TODO: causes bugs in timer.
 			if(playerMoveClk == null) {		//Initialize a timer if there isn't one.
-				playerMoveClk = new javax.swing.Timer(60, new playerMove());
+				playerMoveClk = new javax.swing.Timer(20, new playerMove());
 				playerMoveClk.start();
 			}
-			else
+			else if(!playerMoveClk.isRunning())
 				playerMoveClk.restart();	//If there is, restart it.
 			
 		}
 	}
 	public void keyUp(int kC) {
 		keys[kC] = false;		//Remove the key from the boolean array.
+		anyKeysPressed=false;
+		for(int i=0; i<keys.length; i++) {
+			if(keys[i]) {
+				anyKeysPressed = true;
+				break;
+			}
+		}
 	}
 	public boolean keyStatus(int kC) {
 		return keys[kC];
