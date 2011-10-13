@@ -1,3 +1,4 @@
+package main;
 import java.awt.event.*;
 
 import javax.swing.Timer;
@@ -49,7 +50,7 @@ public class ControlManager {
 		else if(dx != 0 && smoothTickX<1)
 			smoothTickX+=0.1;
 		
-		if(dy == 0 && smoothTickY > 0)
+		if(dy == 0 && smoothTickY > 0) 
 			smoothTickY-=0.1;
 		else if(dy != 0 && smoothTickY<1)
 			smoothTickY+=0.1;
@@ -57,8 +58,11 @@ public class ControlManager {
 		dx *= smoothTickX;
 		dy *= smoothTickY;
 		
-		if(!anyKeysPressed)
+		if(!anyKeysPressed) {
 			playerMoveClk.stop();
+			smoothTickX = 0;
+			smoothTickY = 0;
+		}
 	//	DEBUG: System.out.println("Player asked to move by "+dx+", "+dy);
 		player.move(dx, dy);
 		
@@ -76,7 +80,7 @@ public class ControlManager {
 			
 			keys[kC] = true;				//Add the key to a boolean array.
 			if(playerMoveClk == null) {		//Initialize a timer if there isn't one.
-				playerMoveClk = new javax.swing.Timer(20, new playerMove());
+				playerMoveClk = new javax.swing.Timer(30, new playerMove());
 				playerMoveClk.start();
 			}
 			else if(!playerMoveClk.isRunning())

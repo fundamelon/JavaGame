@@ -1,3 +1,5 @@
+package main;
+import javax.imageio.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -13,6 +15,10 @@ public class grid extends JPanel implements KeyListener {
 	private GraphicsManager gameGraphics;
 	private int w, h;
 	private PlayerEnt player = new PlayerEnt(5, 5);
+	private boolean first = true;
+	
+	private int tick = 0, fpsTick = 0, frames = 0, fps = 0;
+	
 	
 	public grid(Color backColor, int width, int height) {
 		setBackground(backColor);
@@ -27,6 +33,7 @@ public class grid extends JPanel implements KeyListener {
 	}
 	
 	public void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
+		
 		int k=0;
 		Color oldColor = g.getColor();
 		g.setColor(new Color(200, 200, 200));
@@ -37,23 +44,35 @@ public class grid extends JPanel implements KeyListener {
 		int wdOfRow = w / 20;
 		for (k = 0; k <= 20; k++) 
 			g.drawLine(k*wdOfRow , 0, k*wdOfRow , h);
+		
 		g.setColor(oldColor);
 	}
 	
-	public static void print(Graphics g, String text) {
-		g.drawString(text, 100, 100);
+	public static void print(Graphics g, String text, int x, int y) {
+		g.drawString(text, x, y);
 	}
 	
 	
 	public void paintComponent(Graphics g) {	//Called each time it's redrawn.  Send the gamegraphics a message to draw each component.
 		super.paintComponent(g);
 		drawGrid(g);
+		gameGraphics.drawBackground(g);
 		gameGraphics.draw(g, player, this);
+		first = false;
+		frames++;
+		if(fpsTick == 100) {
+			fps = frames;
+			fpsTick = 0;
+			frames = 0;
+		}
+		print(g, "fps: "+fps, 100, 100);
 	}
 	
 	private class MoveListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
-			repaint();
+			tick++;
+			fpsTick++;
+		//	repaint();
 		}
 	}
 
@@ -65,6 +84,6 @@ public class grid extends JPanel implements KeyListener {
 		gameControl.keyUp(e.getKeyCode());
 		
 	}
-
+	
 	public void keyTyped(KeyEvent e) {}
 }
