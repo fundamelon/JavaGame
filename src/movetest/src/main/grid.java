@@ -72,7 +72,7 @@ public class grid extends JPanel implements KeyListener {
 		public void actionPerformed(ActionEvent e) {
 			tick++;
 			fpsTick++;
-		//	repaint();
+			repaint();
 		}
 	}
 
