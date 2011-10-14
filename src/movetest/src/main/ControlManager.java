@@ -9,17 +9,20 @@ public class ControlManager {
 	private char KEY_MOVE_EAST = "D".charAt(0);
 	private char KEY_MOVE_WEST = "A".charAt(0);
 	
+	private char KEY_RESET_RAND = "R".charAt(0);
+	
 	private double smoothTickX = 0, smoothTickY = 0, smoothAmt = 0.1;
 	private boolean anyKeysPressed = false;
 	
 	private PlayerEnt player;
+	
 	
 	public ControlManager(grid panel, PlayerEnt oldPlayer) {
 		player = oldPlayer;
 	}
 	
 	
-	private double playerMoveAmt = 0.07;
+	private double playerMoveAmt = 1;
 	
 	private javax.swing.Timer playerMoveClk;
 	
@@ -65,7 +68,7 @@ public class ControlManager {
 		}
 	//	DEBUG: System.out.println("Player asked to move by "+dx+", "+dy);
 		player.move(dx, dy);
-		
+	
 	}
 	
 	//Keyboard manager.
@@ -80,7 +83,7 @@ public class ControlManager {
 			
 			keys[kC] = true;				//Add the key to a boolean array.
 			if(playerMoveClk == null) {		//Initialize a timer if there isn't one.
-				playerMoveClk = new javax.swing.Timer(30, new playerMove());
+				playerMoveClk = new javax.swing.Timer(15, new playerMove());
 				playerMoveClk.start();
 			}
 			else if(!playerMoveClk.isRunning())
@@ -98,13 +101,30 @@ public class ControlManager {
 			}
 		}
 	}
-	public boolean keyStatus(int kC) {
+	public boolean getKeyStatus(int kC) {
 		return keys[kC];
+	}
+	
+	public boolean getKeyStatus(char kC) {
+		return keys[kC];
+	}
+	
+	public void setKeyStatus(int kC, boolean newState) {
+		keys[kC] = newState;
+	}
+	
+	public void setKeyStatus(char kC, boolean newState) {
+		keys[kC] = newState;
 	}
 	
 	public char getKeyN() {return KEY_MOVE_NORTH;}
 	public char getKeyS() {return KEY_MOVE_SOUTH;}
 	public char getKeyE() {return KEY_MOVE_EAST;}
 	public char getKeyW() {return KEY_MOVE_WEST;}
+	
+
+	public static double clamp(double i, int high, int low) {
+		return Math.max (high, Math.min (i, low));
+	}
 	
 }

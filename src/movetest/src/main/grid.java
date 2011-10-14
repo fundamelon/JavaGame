@@ -14,7 +14,7 @@ public class grid extends JPanel implements KeyListener {
 	private ControlManager gameControl;
 	private GraphicsManager gameGraphics;
 	private int w, h;
-	private PlayerEnt player = new PlayerEnt(5, 5);
+	private PlayerEnt player = new PlayerEnt(5, 5, this);
 	private boolean first = true;
 	
 	private int tick = 0, fpsTick = 0, frames = 0, fps = 0;
@@ -30,6 +30,8 @@ public class grid extends JPanel implements KeyListener {
 		timer.start();
 		w = width;
 		h = height;
+		
+		player.setBlockSize(width/20);
 	}
 	
 	public void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
@@ -56,7 +58,6 @@ public class grid extends JPanel implements KeyListener {
 	public void paintComponent(Graphics g) {	//Called each time it's redrawn.  Send the gamegraphics a message to draw each component.
 		super.paintComponent(g);
 		drawGrid(g);
-		gameGraphics.drawBackground(g);
 		gameGraphics.draw(g, player, this);
 		first = false;
 		frames++;
