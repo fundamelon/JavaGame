@@ -67,11 +67,6 @@ public class ControlManager {
 			smoothTickY = 0;
 		}
 	//	DEBUG: System.out.println("Player asked to move by "+dx+", "+dy);
-		
-		if(dx != 0 && dy != 0) {
-			dx *= 0.8;
-			dy *= 0.8;
-		}
 		player.move(dx, dy);
 	
 	}
