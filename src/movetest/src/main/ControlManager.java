@@ -13,6 +13,7 @@ public class ControlManager {
 	
 	private double smoothTickX = 0, smoothTickY = 0, smoothAmt = 0.1;
 	private boolean anyKeysPressed = false;
+	public double distance;
 	
 	private PlayerEnt player;
 	
@@ -24,10 +25,10 @@ public class ControlManager {
 	
 	private double playerMoveAmt = 1;
 	
-	private javax.swing.Timer playerMoveClk;
+	private javax.swing.Timer playerMoveClk;  //how is the timer integerated? move speed?
 	
 	public double getPlayerMoveAmt() {
-		return playerMoveAmt;
+		return playerMoveAmt; //what does this code do?
 	}
 	
 	private class playerMove implements ActionListener{
