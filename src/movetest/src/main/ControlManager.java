@@ -97,7 +97,7 @@ public class ControlManager {
 			
 		}
 	}
-	public void keyUp(int kC) {
+	public void keyUp(int kC) {  // what is KC????
 		keys[kC] = false;		//Remove the key from the boolean array.
 		anyKeysPressed=false;
 		for(int i=0; i<keys.length; i++) {
@@ -130,7 +130,7 @@ public class ControlManager {
 	
 
 	public static double clamp(double i, int high, int low) {
-		return Math.max (high, Math.min (i, low));
+		return Math.max (high, Math.min (i, low)); // wait is this the boundaries? or can i still add them?
 	}
 	
 }
