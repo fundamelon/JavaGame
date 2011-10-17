@@ -49,32 +49,50 @@ public class GraphicsManager {
 			texture[8] = ImageIO.read(new File("bin/img/grass_end2.png"));
 			texture[9] = ImageIO.read(new File("bin/img/grass_end3.png"));
 			rand.setSeed(textureSeed);
-			Image curTexture, overlay;
+			int curPosX = 0, curPosY = 0;
 			for(int k = 0; k <= 19; k++) {
 				for(int c = 0; c <= 14; c++) {
+					curPosX = k * 32;
+					curPosY = c * 32;
 					if((k == 0)  || (k == 19) || (c == 0) || (c == 14)) { 
-
-						g2.drawImage(texture[rand.nextInt(2)+4], k*wdOfRow, c*htOfRow, null);
+						g2.drawImage(texture[rand.nextInt(3)+4], curPosX, curPosY, curPosX + 32, curPosY+32, 0, 0, 32, 32, null);
 						
 						
 						if(k==19) {
 							if(c == 0) {
-								g2.drawImage(texture[9], k*wdOfRow, c*htOfRow, null);
+								g2.drawImage(texture[9], curPosX, curPosY, null);
+							}
+							else if(c != 14) {
+								g2.drawImage(texture[rand.nextInt(2)+7], curPosX, curPosY, null);
 							}
 							else {
-								g2.drawImage(texture[rand.nextInt(2)+7], k*wdOfRow, c*htOfRow, null);
+								g2.drawImage(texture[9], curPosX, curPosY + 32, curPosX + 32, curPosY, 0, 0, 32, 32, null);
 							}
 						}
 						
 						if(k==0) {
-								g2.drawImage(texture[rand.nextInt(2)+7], 
-										k*wdOfRow, 
-										c*htOfRow, 
-										null);
+							if(c==0) {
+								g2.drawImage(texture[9], curPosX + 32, curPosY, curPosX, curPosY+32, 0, 0, 32, 32, null);
+							}
+							else if(c != 14) {
+								g2.drawImage(texture[rand.nextInt(2)+7], curPosX + 32, curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
+							}
+							else {
+								g2.drawImage(texture[9], curPosX + 32, curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
+							}
+						}
+						
+						if(k != 0 && k != 19) {
+							if(c==0) {
+								g2.drawImage(texture[rand.nextInt(2)+7], curPosX, 32, curPosX + 32, 0, 0, 0, 32, 32, null);
+							}
+							if(c==14) {
+								g2.drawImage(texture[rand.nextInt(2)+7], curPosX + 32 , curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
+							}
 						}
 					}
 					else {
-						g2.drawImage(texture[rand.nextInt(3)+1], k * wdOfRow, c * htOfRow, null);
+						g2.drawImage(texture[rand.nextInt(3)+1], curPosX, curPosY, null);
 					}
 					
 				}

@@ -22,7 +22,7 @@ public class ControlManager {
 	}
 	
 	
-	private double playerMoveAmt = 1;
+	private double playerMoveAmt = 2;
 	
 	private javax.swing.Timer playerMoveClk;
 	
@@ -69,8 +69,8 @@ public class ControlManager {
 	//	DEBUG: System.out.println("Player asked to move by "+dx+", "+dy);
 		
 		if(dx != 0 && dy != 0) {
-			dx *= 0.8;
-			dy *= 0.8;
+			dx *= 0.7;
+			dy *= 0.7;
 		}
 		player.move(dx, dy);
 	
@@ -88,7 +88,7 @@ public class ControlManager {
 			
 			keys[kC] = true;				//Add the key to a boolean array.
 			if(playerMoveClk == null) {		//Initialize a timer if there isn't one.
-				playerMoveClk = new javax.swing.Timer(15, new playerMove());
+				playerMoveClk = new javax.swing.Timer(25, new playerMove());
 				playerMoveClk.start();
 			}
 			else if(!playerMoveClk.isRunning())
