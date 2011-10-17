@@ -13,6 +13,7 @@ public class ControlManager {
 	
 	private double smoothTickX = 0, smoothTickY = 0, smoothAmt = 0.1;
 	private boolean anyKeysPressed = false;
+	public double distance;
 	
 	private PlayerEnt player;
 	
@@ -24,10 +25,10 @@ public class ControlManager {
 	
 	private double playerMoveAmt = 2;
 	
-	private javax.swing.Timer playerMoveClk;
+	private javax.swing.Timer playerMoveClk;  //how is the timer integerated? move speed?
 	
 	public double getPlayerMoveAmt() {
-		return playerMoveAmt;
+		return playerMoveAmt; //what does this code do?
 	}
 	
 	private class playerMove implements ActionListener{
@@ -96,7 +97,7 @@ public class ControlManager {
 			
 		}
 	}
-	public void keyUp(int kC) {
+	public void keyUp(int kC) {  // what is KC????
 		keys[kC] = false;		//Remove the key from the boolean array.
 		anyKeysPressed=false;
 		for(int i=0; i<keys.length; i++) {
@@ -129,7 +130,7 @@ public class ControlManager {
 	
 
 	public static double clamp(double i, int high, int low) {
-		return Math.max (high, Math.min (i, low));
+		return Math.max (high, Math.min (i, low)); // wait is this the boundaries? or can i still add them?
 	}
 	
 }
