@@ -4,13 +4,13 @@ import java.awt.event.*;
 import javax.swing.Timer;
 
 public class ControlManager {
+	
+	//declatation of characters to watch for 
 	private char KEY_MOVE_NORTH = "W".charAt(0);
 	private char KEY_MOVE_SOUTH = "S".charAt(0);
 	private char KEY_MOVE_EAST = "D".charAt(0);
 	private char KEY_MOVE_WEST = "A".charAt(0);
-	
 	private char KEY_RESET_RAND = "R".charAt(0);
-	
 	private double smoothTickX = 0, smoothTickY = 0, smoothAmt = 0.1;
 	private boolean anyKeysPressed = false;
 	public double distance;
@@ -23,12 +23,12 @@ public class ControlManager {
 	}
 	
 	
-	private double playerMoveAmt = 2;
+	private double playerMoveAmt = 20;
 	
-	private javax.swing.Timer playerMoveClk;  //how is the timer integerated? move speed?
+	private javax.swing.Timer playerMoveClk;  
 	
 	public double getPlayerMoveAmt() {
-		return playerMoveAmt; //what does this code do?
+		return playerMoveAmt; 
 	}
 	
 	private class playerMove implements ActionListener{
@@ -40,15 +40,24 @@ public class ControlManager {
 	public void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
 		double dx=0, dy=0;
 
-		if(keys[KEY_MOVE_NORTH])
+		if(keys[KEY_MOVE_NORTH]){
 			dy = dy - playerMoveAmt;
-		if(keys[KEY_MOVE_SOUTH])
+			distance++;
+		}
+		if(keys[KEY_MOVE_SOUTH]){
 			dy = dy + playerMoveAmt;
-		if(keys[KEY_MOVE_EAST])
+			distance++;
+		}
+		if(keys[KEY_MOVE_EAST]){
 			dx = dx + playerMoveAmt;
-		if(keys[KEY_MOVE_WEST])
+			distance++;
+		}
+		if(keys[KEY_MOVE_WEST]){
 			dx = dx - playerMoveAmt;
+			distance++;
+		}
 
+		//movement and movement speed
 		if(dx == 0 && smoothTickX > 0)
 			smoothTickX-=0.1;
 		else if(dx != 0 && smoothTickX<1)
