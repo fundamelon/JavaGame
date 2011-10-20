@@ -13,7 +13,10 @@ public class ControlManager {
 	private char KEY_RESET_RAND = "R".charAt(0);
 	private double smoothTickX = 0, smoothTickY = 0, smoothAmt = 0.1;
 	private boolean anyKeysPressed = false;
-	public double distance;
+	public double distancepy;
+	public double distanceny;
+	public double distancepx;
+	public double distancenx;
 	
 	private PlayerEnt player;
 	
@@ -42,19 +45,19 @@ public class ControlManager {
 
 		if(keys[KEY_MOVE_NORTH]){
 			dy = dy - playerMoveAmt;
-			distance++;
+			distancepy++;
 		}
 		if(keys[KEY_MOVE_SOUTH]){
 			dy = dy + playerMoveAmt;
-			distance++;
+			distanceny++;
 		}
 		if(keys[KEY_MOVE_EAST]){
 			dx = dx + playerMoveAmt;
-			distance++;
+			distancepx++;
 		}
 		if(keys[KEY_MOVE_WEST]){
 			dx = dx - playerMoveAmt;
-			distance++;
+			distancenx++;
 		}
 
 		//movement and movement speed
