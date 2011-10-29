@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class grid extends JPanel implements KeyListener {
+public class grid extends JPanel implements KeyListener, Runnable {
 	/**
 	 * 
 	 */
@@ -16,8 +16,46 @@ public class grid extends JPanel implements KeyListener {
 	private int w, h;
 	private PlayerEnt player = new PlayerEnt(5, 5, this);
 	private boolean first = true;
+	private Image dbImage;
+	private Graphics dbg;
 	
 	private int tick = 0, fpsTick = 0, frames = 0, fps = 0;
+	
+	public void init() {}
+	public void start() {
+		//Get this process thread and assign it to th
+		Thread th = new Thread(this);
+		th.start();
+	}
+	
+	
+	//TODO: Make these live up to their names
+	public void stop() {}
+	public void destroy() {}
+	
+	//run() is called every time the thread executes.
+	public void run() {
+		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+		
+		//Infinite loop; to stop it you call stop() or destroy().
+		while(true) {
+			tick++;
+			fpsTick++;
+			repaint();
+			
+			try
+			{
+				//Stop the infinite loop for 20 millis
+				Thread.sleep(20);
+			}
+			catch(InterruptedException ex) {
+				//just ignore it
+			}
+			
+			Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+		}
+	}
+	
 	
 	
 	public grid(Color backColor, int width, int height) {
@@ -26,32 +64,30 @@ public class grid extends JPanel implements KeyListener {
 		gameControl = new ControlManager(this, player);
 		gameGraphics = new GraphicsManager(this, gameControl, player);
 		System.out.println("Player initialized");
-		timer = new javax.swing.Timer(10, new MoveListener());
-		timer.start();
 		w = width;
 		h = height;
 		
 		player.setBlockSize(width/20);
+		
+		start();
+	//	timer = new javax.swing.Timer(40, new MoveListener());
+	//	timer.start();
 	}
 	
-	public void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
+	public void update(Graphics g) //Called when repaint() is called, this runs before paintComponent().
+	{
+		//Capture the screen image
+		if(dbImage == null) {
+			dbImage = createImage(this.getSize().width, this.getSize().height);
+			dbg = dbImage.getGraphics();
+		}
 		
-		int k=0;
-		Color oldColor = g.getColor();
-		g.setColor(new Color(200, 200, 200));
-		int htOfRow = h / 15;
-		for (k = 0; k <= 15; k++)
-			g.drawLine(0, k * htOfRow , w, k * htOfRow );
-		
-		int wdOfRow = w / 20;
-		for (k = 0; k <= 20; k++) 
-			g.drawLine(k*wdOfRow , 0, k*wdOfRow , h);
-		
-		g.setColor(oldColor);
-	}
-	
-	public static void print(Graphics g, String text, int x, int y) {
-		g.drawString(text, x, y);
+		//Paint the screen image after the screen is redrawn.  Don't touch unless you know what you're doing!
+		dbg.setColor(getBackground());
+		dbg.fillRect(0, 0, this.getSize().width, this.getSize().height);
+		dbg.setColor(getForeground());
+		paint(dbg);
+		g.drawImage(dbImage, 0, 0, this);
 	}
 	
 	
@@ -75,6 +111,26 @@ public class grid extends JPanel implements KeyListener {
 			fpsTick++;
 			repaint();
 		}
+	}
+	
+	public void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
+		
+		int k=0;
+		Color oldColor = g.getColor();
+		g.setColor(new Color(200, 200, 200));
+		int htOfRow = h / 15;
+		for (k = 0; k <= 15; k++)
+			g.drawLine(0, k * htOfRow , w, k * htOfRow );
+		
+		int wdOfRow = w / 20;
+		for (k = 0; k <= 20; k++) 
+			g.drawLine(k*wdOfRow , 0, k*wdOfRow , h);
+		
+		g.setColor(oldColor);
+	}
+	
+	public static void print(Graphics g, String text, int x, int y) {
+		g.drawString(text, x, y);
 	}
 
 	public void keyPressed(KeyEvent e) {

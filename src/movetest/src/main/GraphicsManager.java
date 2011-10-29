@@ -14,7 +14,7 @@ import java.util.*;
 
 public class GraphicsManager {
 	
-	Image[] texture = new Image[10];
+	BufferedImage[] texture = new BufferedImage[10];
 	grid panel;
 	private Random rand = new Random();
 	private int textureSeed = rand.nextInt(64);
@@ -84,10 +84,10 @@ public class GraphicsManager {
 						
 						if(k != 0 && k != 19) {
 							if(c==0) {
-								g2.drawImage(texture[rand.nextInt(2)+7], curPosX, 32, curPosX + 32, 0, 0, 0, 32, 32, null);
+								g2.drawImage(texture[rand.nextInt(2)+7], curPosX, curPosY + 32, curPosX + 32, curPosY, 0, 0, 32, 32, null);
 							}
 							if(c==14) {
-								g2.drawImage(texture[rand.nextInt(2)+7], curPosX + 32 , curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
+								g2.drawImage(texture[rand.nextInt(2)+7], curPosX + 32, curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
 							}
 						}
 					}

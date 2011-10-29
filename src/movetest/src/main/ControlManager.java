@@ -23,7 +23,7 @@ public class ControlManager {
 	}
 	
 	
-	private double playerMoveAmt = 2;
+	private double playerMoveAmt = 1.5;
 	
 	private javax.swing.Timer playerMoveClk;  //how is the timer integerated? move speed?
 	
@@ -89,7 +89,7 @@ public class ControlManager {
 			
 			keys[kC] = true;				//Add the key to a boolean array.
 			if(playerMoveClk == null) {		//Initialize a timer if there isn't one.
-				playerMoveClk = new javax.swing.Timer(25, new playerMove());
+				playerMoveClk = new javax.swing.Timer(10, new playerMove());
 				playerMoveClk.start();
 			}
 			else if(!playerMoveClk.isRunning())
@@ -102,7 +102,7 @@ public class ControlManager {
 		anyKeysPressed=false;
 		for(int i=0; i<keys.length; i++) {
 			if(keys[i]) {
-				anyKeysPressed = true;
+				anyKeysPressed = true; 
 				break;
 			}
 		}
