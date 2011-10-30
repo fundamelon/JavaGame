@@ -11,8 +11,9 @@ public class ControlManager {
 	private char KEY_MOVE_SOUTH = "S".charAt(0);
 	private char KEY_MOVE_EAST = "D".charAt(0);
 	private char KEY_MOVE_WEST = "A".charAt(0);
+	@SuppressWarnings("unused")
 	private char KEY_RESET_RAND = "R".charAt(0);
-	private double smoothTickX = 0, smoothTickY = 0, smoothAmt = 0.1;
+	private double smoothTickX = 0, smoothTickY = 0;
 	private boolean anyKeysPressed = false;
 	public double distancepy;
 	public double distanceny;

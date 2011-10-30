@@ -1,13 +1,10 @@
 package main;
 import java.awt.*;
-import java.awt.image.*;
 import java.io.*;
-import java.util.*;
 import javax.imageio.ImageIO;
 
 public class PlayerEnt {
 	private double x=0, y=0;
-	private int ang;
 	private grid panel;
 	private int blockSize;
 	

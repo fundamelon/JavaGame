@@ -1,5 +1,4 @@
 package main;
-import javax.imageio.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -10,16 +9,14 @@ public class grid extends JPanel implements KeyListener, Runnable {
 	 */
 	private static final long serialVersionUID = 6306113229343973266L;
 	
-	private javax.swing.Timer timer;
 	private ControlManager gameControl;
 	private GraphicsManager gameGraphics;
 	private int w, h;
 	private PlayerEnt player = new PlayerEnt(5, 5, this);
-	private boolean first = true;
 	private Image dbImage;
 	private Graphics dbg;
 	
-	private int tick = 0, fpsTick = 0, frames = 0, fps = 0;
+	private int fpsTick = 0, frames = 0, fps = 0;
 	
 	public void init() {}
 	public void start() {
@@ -39,7 +36,6 @@ public class grid extends JPanel implements KeyListener, Runnable {
 		
 		//Infinite loop; to stop it you call stop() or destroy().
 		while(true) {
-			tick++;
 			fpsTick++;
 			repaint();
 			
@@ -95,7 +91,6 @@ public class grid extends JPanel implements KeyListener, Runnable {
 		super.paintComponent(g);
 		drawGrid(g);
 		gameGraphics.draw(g, player, this);
-		first = false;
 		frames++;
 		if(fpsTick == 100) {
 			fps = frames;
@@ -103,14 +98,6 @@ public class grid extends JPanel implements KeyListener, Runnable {
 			frames = 0;
 		}
 		print(g, "fps: "+fps, 100, 100);
-	}
-	
-	private class MoveListener implements ActionListener{
-		public void actionPerformed(ActionEvent e) {
-			tick++;
-			fpsTick++;
-			repaint();
-		}
 	}
 	
 	public void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
@@ -129,7 +116,7 @@ public class grid extends JPanel implements KeyListener, Runnable {
 		g.setColor(oldColor);
 	}
 	
-	public static void print(Graphics g, String text, int x, int y) {
+	public void print(Graphics g, String text, int x, int y) {
 		g.drawString(text, x, y);
 	}
 
