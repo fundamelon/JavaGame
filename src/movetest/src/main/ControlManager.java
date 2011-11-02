@@ -19,6 +19,7 @@ public class ControlManager {
 	public double distanceny;
 	public double distancepx;
 	public double distancenx;
+	private int ticks;
 	
 	private PlayerEnt player;
 	
@@ -37,8 +38,8 @@ public class ControlManager {
 	*/
 	
 	//Player move amount and move timer varibabelz
-	private double playerMoveAmt = 1.5;
-	private javax.swing.Timer playerMoveClk;  
+	private double playerMoveAmt = 2.3;
+//	private javax.swing.Timer playerMoveClk;  
 	
 	
 	//Just an accessor in case we need it
@@ -47,10 +48,9 @@ public class ControlManager {
 	}
 	
 	//Fire the move function when the timer is triggered.
-	private class playerMove implements ActionListener{
-		public void actionPerformed(ActionEvent e) {
-			movePlayerByAmt();			
-		}
+	public void clk(int n) {
+		ticks = n;
+		movePlayerByAmt();	
 	}
 	
 	public void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
@@ -92,7 +92,7 @@ public class ControlManager {
 		
 		//Reset smoothing if you're at a standstill.
 		if(!anyKeysPressed) {
-			playerMoveClk.stop();
+	//		playerMoveClk.stop();
 			smoothTickX = 0;
 			smoothTickY = 0;
 		}
@@ -119,12 +119,12 @@ public class ControlManager {
 			//	DEBUG: System.out.println("Keydown event. "+(char)kC+" is now active.");
 			
 			keys[kC] = true;				//Add the key to a boolean array.
-			if(playerMoveClk == null) {		//Initialize a timer if there isn't one.
-				playerMoveClk = new javax.swing.Timer(10, new playerMove());
-				playerMoveClk.start();
-			}
-			else if(!playerMoveClk.isRunning())
-				playerMoveClk.restart();	//If there is, restart it.
+	//		if(playerMoveClk == null) {		//Initialize a timer if there isn't one.
+	//			playerMoveClk = new javax.swing.Timer(10, new playerMove());
+	//			playerMoveClk.start();
+	//		}
+	//		else if(!playerMoveClk.isRunning())
+	//			playerMoveClk.restart();	//If there is, restart it.
 			
 		}
 	}

@@ -3,7 +3,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class grid extends JPanel implements KeyListener, Runnable {
+public class grid extends JPanel implements KeyListener, MouseListener, Runnable {
 	/**
 	 * 
 	 */
@@ -15,6 +15,9 @@ public class grid extends JPanel implements KeyListener, Runnable {
 	private PlayerEnt player = new PlayerEnt(5, 5, this);
 	private Image dbImage;
 	private Graphics dbg;
+	private javax.swing.Timer timer;
+	private int ticks = 0;
+	private Point mousePos;
 	
 	private int fpsTick = 0, frames = 0, fps = 0;
 	
@@ -23,6 +26,8 @@ public class grid extends JPanel implements KeyListener, Runnable {
 		//Get this process thread and assign it to th
 		Thread th = new Thread(this);
 		th.start();
+		timer = new javax.swing.Timer(20, new tickManager());
+		timer.start();
 	}
 	
 	
@@ -37,6 +42,11 @@ public class grid extends JPanel implements KeyListener, Runnable {
 		//Infinite loop; to stop it you call stop() or destroy().
 		while(true) {
 			fpsTick++;
+			try {
+				// Add the mouse position to the container element position! Yay.
+				mousePos = new Point((MouseInfo.getPointerInfo().getLocation().x - this.getLocationOnScreen().x), (MouseInfo.getPointerInfo().getLocation().y - this.getLocationOnScreen().y));
+			} catch(IllegalComponentStateException e) { /* This only exists cause it'll throw an error first time around. */	}
+			
 			repaint();
 			
 			try
@@ -100,6 +110,17 @@ public class grid extends JPanel implements KeyListener, Runnable {
 		print(g, "fps: "+fps, 100, 100);
 	}
 	
+	private class tickManager implements ActionListener {
+
+		public void actionPerformed(ActionEvent e) {
+			//clk stands for clock; each of the clock's "ticks" correspond to one itieration! Neato.
+			ticks++;
+			gameControl.clk(ticks);
+			gameGraphics.clk(ticks);
+		}
+		
+	}
+	
 	public void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
 		
 		int k=0;
@@ -130,4 +151,29 @@ public class grid extends JPanel implements KeyListener, Runnable {
 	}
 	
 	public void keyTyped(KeyEvent e) {}
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mousePressed(MouseEvent e) {
+		gameGraphics.createSparks(mousePos.x, mousePos.y);
+		
+	}
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 }

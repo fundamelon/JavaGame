@@ -12,6 +12,7 @@ public class window {
 		theGUI.setIconImage(new ImageIcon().getImage());
 		grid panel = new grid(Color.white, 640, 480);
 		theGUI.addKeyListener(panel);
+		theGUI.addMouseListener(panel);
 		Container pane = theGUI.getContentPane();
 		pane.add(panel);
 		

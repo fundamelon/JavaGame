@@ -1,7 +1,9 @@
 package main;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
 import javax.imageio.ImageIO;
 import java.awt.image.*;
@@ -16,6 +18,12 @@ public class GraphicsManager {
 	private Random rand = new Random();
 	private int textureSeed = rand.nextInt(64);
 	private ControlManager gameControls;
+	private ParticleEmitter sparks[] = new ParticleEmitter[50];
+	private int sparkct = 0;
+	private int ticks = 0;
+	
+	//Vars with preceding underscore are to be values for render options.  :O
+	private boolean _dither = false;
 	
 	public GraphicsManager(grid transPanel, ControlManager oldControls, PlayerEnt oldPlayer) {
 		panel = transPanel;
@@ -24,8 +32,35 @@ public class GraphicsManager {
 	
 	public void draw(Graphics g, PlayerEnt player, grid panel) {		//The object is intended to tell other objects it's time to re-draw themselves.
 		Graphics2D g2 = (Graphics2D) g;
+		
+		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_DEFAULT);
+		
+		//Dithering! Doesn't work at all lol.  I'm still working on it man, chill out bro
+		if(gameControls.getKeyStatus("L".charAt(0)))
+			_dither = !_dither;
+		
+		if(_dither) 
+			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+		else
+			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+			
 		drawBackground(g2);
+		drawEffects(g2);
 		player.draw(g2);
+	}
+	
+	//Create a burst of sparks at dis location!
+	public void createSparks(int x, int y) {
+		// It goes X, Y, Amount, speed X/Y, drag X/Y (0.8 to 0.99 is good), fade rate, repeater (broked), float boolean, color (optional)
+		if(sparkct == sparks.length-1) 
+			sparkct = 0;
+		else
+			sparkct++;
+		sparks[sparkct] = new ParticleEmitter(x, y, 5, 10, 10, 0.8, 0.8, 40, false, false, Color.yellow);
+	}
+	
+	public void clk(int n) {
+		ticks = n;
 	}
 	
 	public void drawPlayer(Graphics g, PlayerEnt player) {
@@ -126,6 +161,13 @@ public class GraphicsManager {
 			}
 		} catch(IOException e) {
 			System.out.println("Failed to load image!");
+		}
+	}
+	
+	public void drawEffects(Graphics2D g2) {
+		for(int i = 0; i < sparks.length; i++) {
+			if(sparks[i] != null) 
+				sparks[i].draw(g2, ticks);
 		}
 	}
 }
