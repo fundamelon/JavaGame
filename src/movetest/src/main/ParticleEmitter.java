@@ -54,6 +54,7 @@ public class ParticleEmitter {
 	public void draw(Graphics2D g2, int tick) {
 		
 		Color oldColor;
+		
 		for(int i = 0; i < number; i++){
 			//i corresponds to array index for ease of use.
 			
@@ -68,7 +69,7 @@ public class ParticleEmitter {
 				
 				if(particles[i].getTrace() | true)
 					g2.drawLine((int)particles[i].getX(), (int)particles[i].getY(), (int)particles[i].getTraceX(), (int)particles[i].getTraceY());
-				g2.fillRect((int)particles[i].getX(), (int)particles[i].getY(), 0, 0);
+				g2.fillRect((int)particles[i].getX(), (int)particles[i].getY(), 600, 6);
 				g2.setColor(oldColor);
 			}
 			

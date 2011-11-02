@@ -54,7 +54,7 @@ public class PlayerEnt {
 		double mX = (w/20)/2;	//Adjustments to get the center point.
 		double mY = (h/15)/2;
 		try {
-			Image playerPic = ImageIO.read(new File("bin/img/dummy_idle.png"));
+			Image playerPic = ImageIO.read(new File("lib/img/dummy_idle.png"));
 			g2.drawImage(playerPic, (int)((mX-32)+posX), (int)((mY-42)+posY), null);
 			
 			

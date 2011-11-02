@@ -1,12 +1,13 @@
 package main;
 
 import java.awt.Color;
+import java.util.Random;
 
 public class Particle {
 	
 	//Placeholder that only knows its own values and can change them according to a model.
 	private double x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y;
-	private int life, startTick, lastTick = 0;
+	private int life, startTick, lastTick = 0, ang = 0;
 	private boolean alive, trace, grav;
 	private Color curCol;
 	
@@ -28,6 +29,7 @@ public class Particle {
 	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, int st, int life, boolean gravity, Color newColor) {
 		this(x, y, rx, ry, dcx, dcy, st, life, gravity);
 		this.curCol = newColor;
+		this.setAlpha(100);
 	}
 	
 	public void setX(double nx) {x = nx;}
@@ -38,6 +40,8 @@ public class Particle {
 	public void setDecY(double ndec_y) {dec_y = ndec_y;}
 	public void setLife(int nlife) {life = nlife;}
 	public void setColor(Color nC) {curCol = nC;}
+	
+	public void setAlpha(int n) {curCol = new Color(curCol.getRed(), curCol.getGreen(), curCol.getBlue(), n);}
 	
 	public double getX() { return x; }
 	public double getY() { return y; }
@@ -74,6 +78,12 @@ public class Particle {
 				rate_y *= dec_y;
 			else if(!grav) rate_y = 0;
 			
+			Random rand = new Random();
+			if(ang<360) ang+=Math.round(rand.nextDouble()); else ang = 0;
+			
+			this.rate_x = Math.cos(ang) * 2;
+			this.rate_y = Math.sin(ang);
+		//	this.rate_y += 1;
 			
 			if(grav){
 				this.y -= Math.abs(rate_y / 2);
