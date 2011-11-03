@@ -15,10 +15,6 @@ public class ControlManager {
 	private char KEY_RESET_RAND = "R".charAt(0);
 	private double smoothTickX = 0, smoothTickY = 0;
 	private boolean anyKeysPressed = false;
-	public double distancepy;
-	public double distanceny;
-	public double distancepx;
-	public double distancenx;
 	private int ticks;
 	
 	private PlayerEnt player;
