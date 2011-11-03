@@ -164,5 +164,11 @@ public class ControlManager {
 	public static double clamp(double i, int high, int low) {
 		return Math.max (high, Math.min (i, low));
 	}
+	//backwards clamp win?
+	//public static double stop(double i, int high, int low) {
+	//	return Math.min (high, Math.max (i, low))
+	//}
+	
+	
 	
 }

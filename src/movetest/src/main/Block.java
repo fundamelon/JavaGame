@@ -7,17 +7,19 @@ public Block(){
 		this(0, 0)
 	}
 	
-public Block(int fx, int fy)
-	x = fx;
-	y = fy;
+public Block()
+	x = PlayerEnt.getX();
+	y = PlayerEnt.getY();
 	
 }
 
-x1 = PlayerEnt.getX();
-y1 = PlayerEnt.getY();
+public double stop(){
+	if(x == 25 && y == 25)
+		x1 = 24;
+		y1 = 24;
+		return x1, y1;
+}
 
-
-System.out.println(x1);
 
 
 //i started but i cant launch it... ill continue/ finish tomorrow or friday. i figured it out, just time to implement 
