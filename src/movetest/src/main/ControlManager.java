@@ -15,11 +15,15 @@ public class ControlManager {
 	private char KEY_RESET_RAND = "R".charAt(0);
 	private double smoothTickX = 0, smoothTickY = 0;
 	private boolean anyKeysPressed = false;
+//<<<<<<< HEAD
 	public double distancepy;
 	public double distanceny;
 	public double distancepx;
 	public double distancenx;
 	private long tick, lastTick;
+//=======
+	private int ticks;
+//>>>>>>> bfeca26aa279c21b663ea90d784efc36af66fb93
 	
 	private PlayerEnt player;
 	
@@ -169,5 +173,11 @@ public class ControlManager {
 	public static double clamp(double i, int high, int low) {
 		return Math.max (high, Math.min (i, low));
 	}
+	//backwards clamp win?
+	//public static double stop(double i, int high, int low) {
+	//	return Math.min (high, Math.max (i, low))
+	//}
+	
+	
 	
 }
