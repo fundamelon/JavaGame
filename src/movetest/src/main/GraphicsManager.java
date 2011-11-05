@@ -18,9 +18,9 @@ public class GraphicsManager {
 	private Random rand = new Random();
 	private int textureSeed = rand.nextInt(64);
 	private ControlManager gameControls;
-	private ParticleEmitter sparks[] = new ParticleEmitter[50];
+	private ParticleEmitter sparks[] = new ParticleEmitter[500];
 	private int sparkct = 0;
-	private int ticks = 0;
+	private long ticks = 0;
 	
 	//Vars with preceding underscore are to be values for render options.  :O
 	private boolean _dither = false;
@@ -31,8 +31,8 @@ public class GraphicsManager {
 		
 		try {
 			texture[1] = ImageIO.read(new File("lib/img/grass1.png"));
-			texture[2] = ImageIO.read(new File("lib/grass2.png"));
-			texture[3] = ImageIO.read(new File("lib/grass3.png"));
+			texture[2] = ImageIO.read(new File("lib/img/grass2.png"));
+			texture[3] = ImageIO.read(new File("lib/img/grass3.png"));
 			texture[4] = ImageIO.read(new File("lib/img/stone1.png"));
 			texture[5] = ImageIO.read(new File("lib/img/stone2.png"));
 			texture[6] = ImageIO.read(new File("lib/img/stone3.png"));
@@ -65,15 +65,21 @@ public class GraphicsManager {
 	
 	//Create a burst of sparks at dis location!
 	public void createSparks(int x, int y) {
-		// It goes X, Y, Amount, speed X/Y, drag X/Y (0.8 to 0.99 is good), fade rate, repeater (broked), float boolean, color (optional)
+		// It goes X, Y, Amount, speed X/Y, drag X/Y (0.8 to 0.99 is good), fade rate, repeater (broked), float boolean, color (optional)if(sparkct == sparks.length-1) 
 		if(sparkct == sparks.length-1) 
 			sparkct = 0;
 		else
 			sparkct++;
-		sparks[sparkct] = new ParticleEmitter(x, y, 5, 10, 10, 0.8, 0.8, 40, false, false, Color.yellow);
+		sparks[sparkct] = new ParticleEmitter(x, y, 10, 10, 10, 0.8, 0.8, 1, false, false, Color.yellow);
+		if(sparkct == sparks.length-1) 
+			sparkct = 0;
+		else
+			sparkct++;
+		sparks[sparkct] = new ParticleEmitter(x, y, 10, 5, 5, 0.9, 0.9, 1, false, false, Color.white);
+	
 	}
 	
-	public void clk(int n) {
+	public void clk(long n) {
 		ticks = n;
 	}
 	
@@ -139,6 +145,8 @@ public class GraphicsManager {
 					//If it's not far left or right column
 					if(k != 0 && k != 19) {
 						//Top row
+						
+						//Funky way of doing it.  The entire window is translated then rotated, the image drawn at origin, then the window position reset.
 						g2.translate(curPosX + 16, curPosY + 16);
 						if(c==0) {
 							g2.rotate(-0.5 * Math.PI);

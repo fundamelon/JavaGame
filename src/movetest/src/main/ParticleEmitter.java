@@ -11,7 +11,8 @@ public class ParticleEmitter {
 	Color spark_yellow = new Color(90, 0, 50);
 	
 	private boolean loop;
-	private int ex, ey, life, size_x, size_y, trace_x, trace_y, number, tick;
+	private int ex, ey, life, size_x, size_y, trace_x, trace_y, number;
+	private long tick;
 	private double rate_x = 0, rate_y = 0, decay_x, decay_y, ang;
 	
 	private boolean rand_size_x, rand_size_y, rand_dir_x, rand_dir_y, rand_ang, grav;
@@ -33,13 +34,13 @@ public class ParticleEmitter {
 		initParticles(x, y, rx, ry, dcx, dcy, tick, life, gravity, newCol);
 	}
 	
-	public void initParticles(int ox, int oy, double rx, double ry, double dcx, double dcy, int t, int life, boolean gravity, Color newCol) {
+	public void initParticles(int ox, int oy, double rx, double ry, double dcx, double dcy, long t, int life, boolean gravity, Color newCol) {
 		for(int i = 0; i < particles.length; i++ ) {
 			createParticle(i, ox, oy, rx, ry, dcx, dcy, t, life, gravity, newCol);
 		}
 	}
 	
-	public void createParticle(int i, int ox, int oy, double rx, double ry, double dcx, double dcy, int t, int life, boolean gravity, Color newColor) {
+	public void createParticle(int i, int ox, int oy, double rx, double ry, double dcx, double dcy, long t, int life, boolean gravity, Color newColor) {
 		int ang = rand.nextInt() * 360;
 		double dist = ((rand.nextDouble() / 2) + 0.25);
 		rx = Math.cos(ang) * dist * rx;
@@ -47,11 +48,11 @@ public class ParticleEmitter {
 		particles[i] = new Particle(ox, oy, rx, ry, dcx, dcy, t, life, gravity, newColor);
 	}
 	
-	public void updatePos(int i, int t) {
+	public void updatePos(int i, long t) {
 		particles[i].move(t);
 	}
 
-	public void draw(Graphics2D g2, int tick) {
+	public void draw(Graphics2D g2, long tick) {
 		
 		Color oldColor;
 		
@@ -69,7 +70,7 @@ public class ParticleEmitter {
 				
 				if(particles[i].getTrace() | true)
 					g2.drawLine((int)particles[i].getX(), (int)particles[i].getY(), (int)particles[i].getTraceX(), (int)particles[i].getTraceY());
-				g2.fillRect((int)particles[i].getX(), (int)particles[i].getY(), 600, 6);
+				g2.fillRect((int)particles[i].getX(), (int)particles[i].getY(), 1, 1);
 				g2.setColor(oldColor);
 			}
 			

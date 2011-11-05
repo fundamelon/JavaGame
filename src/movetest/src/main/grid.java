@@ -15,49 +15,82 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	private PlayerEnt player = new PlayerEnt(5, 5, this);
 	private Image dbImage;
 	private Graphics dbg;
-	private javax.swing.Timer timer;
-	private int ticks = 0;
+	private long startTime = System.currentTimeMillis(), curTime;
 	private Point mousePos;
+	private boolean mousedown = false;
+	private Thread th;
 	
-	private int fpsTick = 0, frames = 0, fps = 0;
+	private int frame = 0, fps_frame = 0, fps = 20, fps_goal = 30, delay = 1000 / fps_goal, fps_lag = 0;
+	private long frameTime;
 	
-	public void init() {}
+	public void init() {
+		//Compute millis needed for the fps.
+		delay = (fps_goal > 0) ? (1000  / fps_goal) : 100;
+		System.out.print(delay);
+	}
 	public void start() {
 		//Get this process thread and assign it to th
-		Thread th = new Thread(this);
+		th = new Thread(this);
 		th.start();
-		timer = new javax.swing.Timer(20, new tickManager());
-		timer.start();
 	}
 	
 	
-	//TODO: Make these live up to their names
-	public void stop() {}
+	public void stop() {
+		th = null;
+	}
+	
+	//TODO : Override
 	public void destroy() {}
 	
 	//run() is called every time the thread executes.
 	public void run() {
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+		curTime = System.currentTimeMillis();
 		
-		//Infinite loop; to stop it you call stop() or destroy().
-		while(true) {
-			fpsTick++;
+		//Call stop() to stoppit.
+		while(Thread.currentThread() == th) {
 			try {
 				// Add the mouse position to the container element position! Yay.
 				mousePos = new Point((MouseInfo.getPointerInfo().getLocation().x - this.getLocationOnScreen().x), (MouseInfo.getPointerInfo().getLocation().y - this.getLocationOnScreen().y));
 			} catch(IllegalComponentStateException e) { /* This only exists cause it'll throw an error first time around. */	}
 			
+			if(mousedown) 
+				gameGraphics.createSparks(mousePos.x, mousePos.y);
+			
+		//	System.out.println(curTime);
+			
+			//Tell each to set its amount to fps_lag to compensate for lag!
+			gameControl.clk(fps_lag);
+			gameGraphics.clk(fps_lag);
 			repaint();
 			
-			try
-			{
-				//Stop the infinite loop for 20 millis
-				Thread.sleep(20);
+			try {
+				//Add delay to see how far we've got
+				curTime += delay;
+				//Compute our elapsed time from last frame
+				fps_lag = (int)(curTime - System.currentTimeMillis());
+				System.out.println(fps_lag);
+				
+				//Sleep it for the time specified to keep 
+				Thread.sleep(Math.max(0, curTime - System.currentTimeMillis()));
 			}
 			catch(InterruptedException ex) {
-				//just ignore it
+				System.out.println("I say! Someone seems to have interrupted me!");
+				break;
 			}
 			
+			//advance fraem counters
+			frame++;
+			fps_frame++;
+			
+			//Compute FPS (broken)
+			if(System.currentTimeMillis() - frameTime > 100) {
+				frameTime = System.currentTimeMillis();
+				fps = fps_frame;
+				fps_frame = 0;
+			}
+			
+			//Max priority for slower comps
 			Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		}
 	}
@@ -89,7 +122,7 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		}
 		
 		//Paint the screen image after the screen is redrawn.  Don't touch unless you know what you're doing!
-		dbg.setColor(getBackground());
+		dbg.setColor(new Color(getBackground().getRed(), getBackground().getGreen(), getBackground().getBlue(), 256));
 		dbg.fillRect(0, 0, this.getSize().width, this.getSize().height);
 		dbg.setColor(getForeground());
 		paint(dbg);
@@ -97,29 +130,13 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	}
 	
 	
-	public void paintComponent(Graphics g) {	//Called each time it's redrawn.  Send the gamegraphics a message to draw each component.
+	public void paint(Graphics g) {	//Called each time it's redrawn.  Send the gamegraphics a message to draw each component.
 		super.paintComponent(g);
 		drawGrid(g);
 		gameGraphics.draw(g, player, this);
-		frames++;
-		if(fpsTick == 100) {
-			fps = frames;
-			fpsTick = 0;
-			frames = 0;
-		}
 		print(g, "fps: "+fps, 100, 100);
 	}
 	
-	private class tickManager implements ActionListener {
-
-		public void actionPerformed(ActionEvent e) {
-			//clk stands for clock; each of the clock's "ticks" correspond to one itieration! Neato.
-			ticks++;
-			gameControl.clk(ticks);
-			gameGraphics.clk(ticks);
-		}
-		
-	}
 	
 	public void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
 		
@@ -168,11 +185,12 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	}
 	@Override
 	public void mousePressed(MouseEvent e) {
-		gameGraphics.createSparks(mousePos.x, mousePos.y);
+		mousedown = true;
 		
 	}
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
+		mousedown = false;
 		// TODO Auto-generated method stub
 		
 	}

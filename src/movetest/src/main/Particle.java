@@ -7,11 +7,12 @@ public class Particle {
 	
 	//Placeholder that only knows its own values and can change them according to a model.
 	private double x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y;
-	private int life, startTick, lastTick = 0, ang = 0;
+	private int life, ang = 0;
+	private long startTick, lastTick;
 	private boolean alive, trace, grav;
 	private Color curCol;
 	
-	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, int st, int life, boolean gravity) {
+	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, int life, boolean gravity) {
 		this.x = x;
 		this.y = y;
 		this.rate_x = rx;
@@ -26,11 +27,12 @@ public class Particle {
 		this.alive = true;
 	}
 	
-	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, int st, int life, boolean gravity, Color newColor) {
+	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, int life, boolean gravity, Color newColor) {
 		this(x, y, rx, ry, dcx, dcy, st, life, gravity);
 		this.curCol = newColor;
 		this.setAlpha(100);
 	}
+	
 	
 	public void setX(double nx) {x = nx;}
 	public void setY(double ny) {y = ny;}
@@ -52,7 +54,7 @@ public class Particle {
 	public int getLife() {return life;}
 	public boolean getStatus() {return alive;}
 	public boolean getTrace() {return trace;}
-	public int getStartTime() {return startTick;}
+	public long getStartTime() {return startTick;}
 	
 	public int getRed() {return curCol.getRed();}
 	public int getBlue() {return curCol.getBlue();}
@@ -65,12 +67,17 @@ public class Particle {
 	public void kill() {alive = false;}
 	
 	
-	public void move(int tick) {
+	public void move(long tick) {
 		if(alive) {
+			//Trace line origin is the previous X and Y.
 			trace_x = x;
 			trace_y = y;
+			
+			//Move the particles.
 			this.x += rate_x;
 			this.y += rate_y;
+			
+			//Decrease the rates via the decay variables.
 			if(Math.abs(rate_x) > 0.1) 
 				rate_x *= dec_x;
 			else if(!grav) rate_x = 0;
@@ -78,13 +85,15 @@ public class Particle {
 				rate_y *= dec_y;
 			else if(!grav) rate_y = 0;
 			
+			//Make a random angle, then add its sin and cos to the particle.
 			Random rand = new Random();
 			if(ang<360) ang+=Math.round(rand.nextDouble()); else ang = 0;
 			
-			this.rate_x = Math.cos(ang) * 2;
-			this.rate_y = Math.sin(ang);
+			this.rate_x += Math.cos(ang) / 5;
+			this.rate_y += Math.sin(ang) / 5;
 		//	this.rate_y += 1;
 			
+			//Just makes the particles fan out on top and float upwards.
 			if(grav){
 				this.y -= Math.abs(rate_y / 2);
 				if(this.y < trace_y) {this.y += rate_y;}
@@ -92,10 +101,11 @@ public class Particle {
 			this.setColor(new Color(this.getRed(), this.getGreen(), this.getBlue(), Math.max(this.getAlpha() - this.getLife(), 0)));
 			if(this.getAlpha() == 0) {this.kill();}
 			
+		//	System.out.println(tick - lastTick);
+
 			
 		} else {
 			//Stuff to do if its dead.
 		}
-		lastTick = tick;
 	}
 }

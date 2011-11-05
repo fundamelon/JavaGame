@@ -19,7 +19,7 @@ public class ControlManager {
 	public double distanceny;
 	public double distancepx;
 	public double distancenx;
-	private int ticks;
+	private long tick, lastTick;
 	
 	private PlayerEnt player;
 	
@@ -38,7 +38,7 @@ public class ControlManager {
 	*/
 	
 	//Player move amount and move timer varibabelz
-	private double playerMoveAmt = 2.3;
+	private double playerMoveAmt = 3;
 //	private javax.swing.Timer playerMoveClk;  
 	
 	
@@ -48,8 +48,9 @@ public class ControlManager {
 	}
 	
 	//Fire the move function when the timer is triggered.
-	public void clk(int n) {
-		ticks = n;
+	public void clk(long n) {
+		lastTick = tick;
+		tick = n;
 		movePlayerByAmt();	
 	}
 	
@@ -77,14 +78,14 @@ public class ControlManager {
 
 		//movement and movement speed controls.
 		if(dx == 0 && smoothTickX > 0)
-			smoothTickX-=0.1;
+			smoothTickX-=0.2;
 		else if(dx != 0 && smoothTickX<1)
-			smoothTickX+=0.1;
+			smoothTickX+=0.2;
 		
 		if(dy == 0 && smoothTickY > 0) 
-			smoothTickY-=0.1;
+			smoothTickY-=0.2;
 		else if(dy != 0 && smoothTickY<1)
-			smoothTickY+=0.1;
+			smoothTickY+=0.2;
 		
 		//Reduce dx and dy by smoothing factors.
 		dx *= smoothTickX;
