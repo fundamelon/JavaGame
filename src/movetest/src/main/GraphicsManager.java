@@ -3,6 +3,7 @@ package main;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
 
 import javax.imageio.ImageIO;
@@ -21,9 +22,13 @@ public class GraphicsManager {
 	private ParticleEmitter sparks[] = new ParticleEmitter[500];
 	private int sparkct = 0;
 	private long ticks = 0;
+	private Graphics temp_g;
+	private Image dbImage;
 	
+	private Color fadeCol = new Color(0, 0, 0);
+	private Color overlayCol = new Color(fadeCol.getRed(), fadeCol.getGreen(), fadeCol.getBlue(), 0);
 	//Vars with preceding underscore are to be values for render options.  :O
-	private boolean _dither = false;
+	private boolean _dither = false, fadeMode = true, helperText = false;
 	
 	public GraphicsManager(grid transPanel, ControlManager oldControls, PlayerEnt oldPlayer) {
 		panel = transPanel;
@@ -49,21 +54,34 @@ public class GraphicsManager {
 		
 		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_DEFAULT);
 		
-		//Dithering! Doesn't work at all lol.  I'm still working on it man, chill out bro
-		if(gameControls.getKeyStatus("L".charAt(0)))
+	/*	if(gameControls.getKeyStatus("L".charAt(0)))
 			_dither = !_dither;
 		
 		if(_dither) 
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 		else
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
-			
+	*/
 		drawBackground(g2);
-		drawEffects(g2);
 		player.draw(g2);
+		
+		Color oldCol = g2.getColor();
+		fade();
+		g2.setColor(overlayCol);
+		g2.fillRect(0, 0, panel.getWidth(), panel.getHeight());
+		g2.setColor(oldCol);
+		
+		drawEffects(g2);
+		if(helperText) {
+			//TODO: Find a better way to do the line breaks.
+			g2.drawString("TEST CONTROLS", 50, 50);
+			g2.drawString("R: Randomize texture seed", 50, 60);
+			g2.drawString("9: Fade in", 50, 70);
+			g2.drawString("0: Fade out", 50, 80);
+		}
 	}
 	
-	//Create a burst of sparks at dis location!
+	//Create a burst of sparks at this location!
 	public void createSparks(int x, int y) {
 		// It goes X, Y, Amount, speed X/Y, drag X/Y (0.8 to 0.99 is good), fade rate, repeater (broked), float boolean, color (optional)if(sparkct == sparks.length-1) 
 		if(sparkct == sparks.length-1) 
@@ -90,6 +108,7 @@ public class GraphicsManager {
 	public void drawBackground(Graphics2D g2) {
 		//Graphics2D g2 inherits all Graphics, but with more tools and function.
 		
+		drawGrid(g2);
 		
 		//Read and load all the tile files into the array.
 		//Set a random seed so random is the same every time it renders.
@@ -171,6 +190,23 @@ public class GraphicsManager {
 				textureSeed++;
 			}
 		}
+		
+	}
+	
+	//BROKEN - DO NOT USE!
+	public void setBuffer(Graphics g) {
+		//Capture the screen image
+		if(dbImage == null) {
+			dbImage = panel.createImage(panel.getSize().width, panel.getSize().height);
+			temp_g = dbImage.getGraphics();
+		}
+		
+		//Paint the screen image after the screen is redrawn.  Don't touch unless you know what you're doing!
+		temp_g.setColor(new Color(panel.getBackground().getRed(), panel.getBackground().getGreen(), panel.getBackground().getBlue(), 256));
+		temp_g.fillRect(0, 0, panel.getSize().width, panel.getSize().height);
+		temp_g.setColor(panel.getForeground());
+		panel.paint(temp_g);
+		g.drawImage(dbImage, 0, 0, panel);
 	}
 	
 	public void drawEffects(Graphics2D g2) {
@@ -178,5 +214,40 @@ public class GraphicsManager {
 			if(sparks[i] != null) 
 				sparks[i].draw(g2, ticks);
 		}
+	}
+	
+	public void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
+		
+		int k=0;
+		Color oldColor = g.getColor();
+		g.setColor(new Color(200, 200, 200));
+		int htOfRow = panel.getHeight() / 15;
+		for (k = 0; k <= 15; k++)
+			g.drawLine(0, k * htOfRow , panel.getWidth(), k * htOfRow );
+		
+		int wdOfRow = panel.getWidth() / 20;
+		for (k = 0; k <= 20; k++) 
+			g.drawLine(k*wdOfRow , 0, k*wdOfRow , panel.getHeight());
+		
+		g.setColor(oldColor);
+	}
+	
+	public void setFade(boolean mode) {
+		fadeMode = mode;
+	}
+	
+	public void fade() {
+		if(fadeMode) {
+			if(overlayCol.getAlpha() > 0)
+				overlayCol = new Color(overlayCol.getRed(), overlayCol.getGreen(), overlayCol.getBlue(), overlayCol.getAlpha() - 1);
+		}
+		else {
+			if(overlayCol.getAlpha() < 255)
+				overlayCol = new Color(overlayCol.getRed(), overlayCol.getGreen(), overlayCol.getBlue(), overlayCol.getAlpha() + 1);
+		}
+	}
+	
+	public void showHelperText(boolean mode) {
+		helperText = mode;
 	}
 }

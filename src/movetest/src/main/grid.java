@@ -4,9 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class grid extends JPanel implements KeyListener, MouseListener, Runnable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6306113229343973266L;
 	
 	private ControlManager gameControl;
@@ -20,7 +17,7 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	private boolean mousedown = false;
 	private Thread th;
 	
-	private int frame = 0, fps_frame = 0, fps = 20, fps_goal = 30, delay = 1000 / fps_goal, fps_lag = 0;
+	private int frame = 0, fps_frame = 0, fps = 20, fps_goal = 45, delay = 1000 / fps_goal, fps_lag = 0;
 	private long frameTime;
 	
 	public void init() {
@@ -69,7 +66,6 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 				curTime += delay;
 				//Compute our elapsed time from last frame
 				fps_lag = (int)(curTime - System.currentTimeMillis());
-				System.out.println(fps_lag);
 				
 				//Sleep it for the time specified to keep 
 				Thread.sleep(Math.max(0, curTime - System.currentTimeMillis()));
@@ -80,11 +76,9 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 			}
 			
 			//advance fraem counters
-			frame++;
-			fps_frame++;
 			
 			//Compute FPS (broken)
-			if(System.currentTimeMillis() - frameTime > 100) {
+			if(System.currentTimeMillis() - frameTime > 1000) {
 				frameTime = System.currentTimeMillis();
 				fps = fps_frame;
 				fps_frame = 0;
@@ -102,6 +96,7 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		setPreferredSize(new Dimension(width, height));
 		gameControl = new ControlManager(this, player);
 		gameGraphics = new GraphicsManager(this, gameControl, player);
+		gameControl.setGraphics(gameGraphics);
 		System.out.println("Player initialized");
 		w = width;
 		h = height;
@@ -115,44 +110,18 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	
 	public void update(Graphics g) //Called when repaint() is called, this runs before paintComponent().
 	{
-		//Capture the screen image
-		if(dbImage == null) {
-			dbImage = createImage(this.getSize().width, this.getSize().height);
-			dbg = dbImage.getGraphics();
-		}
-		
-		//Paint the screen image after the screen is redrawn.  Don't touch unless you know what you're doing!
-		dbg.setColor(new Color(getBackground().getRed(), getBackground().getGreen(), getBackground().getBlue(), 256));
-		dbg.fillRect(0, 0, this.getSize().width, this.getSize().height);
-		dbg.setColor(getForeground());
-		paint(dbg);
-		g.drawImage(dbImage, 0, 0, this);
 	}
 	
 	
 	public void paint(Graphics g) {	//Called each time it's redrawn.  Send the gamegraphics a message to draw each component.
 		super.paintComponent(g);
-		drawGrid(g);
 		gameGraphics.draw(g, player, this);
-		print(g, "fps: "+fps, 100, 100);
+		frame++;
+		fps_frame++;
+		print(g, "fps: "+fps, 150, 100);
 	}
 	
 	
-	public void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
-		
-		int k=0;
-		Color oldColor = g.getColor();
-		g.setColor(new Color(200, 200, 200));
-		int htOfRow = h / 15;
-		for (k = 0; k <= 15; k++)
-			g.drawLine(0, k * htOfRow , w, k * htOfRow );
-		
-		int wdOfRow = w / 20;
-		for (k = 0; k <= 20; k++) 
-			g.drawLine(k*wdOfRow , 0, k*wdOfRow , h);
-		
-		g.setColor(oldColor);
-	}
 	
 	public void print(Graphics g, String text, int x, int y) {
 		g.drawString(text, x, y);
@@ -168,6 +137,8 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	}
 	
 	public void keyTyped(KeyEvent e) {}
+	
+	
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
@@ -183,15 +154,13 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		// TODO Auto-generated method stub
 		
 	}
-	@Override
+
 	public void mousePressed(MouseEvent e) {
 		mousedown = true;
 		
 	}
-	@Override
+
 	public void mouseReleased(MouseEvent arg0) {
 		mousedown = false;
-		// TODO Auto-generated method stub
-		
 	}
 }

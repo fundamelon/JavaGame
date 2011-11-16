@@ -15,8 +15,12 @@ public class window {
 		theGUI.addMouseListener(panel);
 		Container pane = theGUI.getContentPane();
 		pane.add(panel);
-		
+		theGUI.setIgnoreRepaint(true);
+
+		theGUI.setResizable(false);
 		theGUI.pack();	//Important function to keep interior dimensions even with the saiz of window.
 		theGUI.setVisible(true);
+		
+	//	theGUI.createBufferStrategy(2);
 	}
 }

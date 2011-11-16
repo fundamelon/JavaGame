@@ -15,6 +15,9 @@ public class ControlManager {
 	private char KEY_RESET_RAND = "R".charAt(0);
 	private double smoothTickX = 0, smoothTickY = 0;
 	private boolean anyKeysPressed = false;
+	boolean[] keys = new boolean[525];
+	
+	private GraphicsManager gameGraphics;
 //<<<<<<< HEAD
 	public double distancepy;
 	public double distanceny;
@@ -30,6 +33,10 @@ public class ControlManager {
 	
 	public ControlManager(grid panel, PlayerEnt oldPlayer) {
 		player = oldPlayer;
+	}
+	
+	public void setGraphics(GraphicsManager gM) {
+		gameGraphics = gM;
 	}
 	
 	/*  What happened here? FIX IT >:(
@@ -56,6 +63,10 @@ public class ControlManager {
 		lastTick = tick;
 		tick = n;
 		movePlayerByAmt();	
+		updateUtilKeys();
+		
+		if(getKeyStatus("H".charAt(0))) 	gameGraphics.showHelperText(true);
+		else 						gameGraphics.showHelperText(false);
 	}
 	
 	public void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
@@ -112,12 +123,21 @@ public class ControlManager {
 	
 	}
 	
+	public void updateUtilKeys() {
+		if(keys["0".charAt(0)]) 
+			gameGraphics.setFade(false);
+		
+		if(keys["9".charAt(0)])
+			gameGraphics.setFade(true);
+	}
+	
+	
 	//Character array of keys pressed.
-	boolean[] keys = new boolean[525];
 	
 	//Called when grid gets a key down event.
 	public void keyDown(int kC) {
 		anyKeysPressed = true;
+		updateUtilKeys();
 		
 		if(!keys[kC]) {						//Check if they key hasn't been already registered - prevents glitches.
 		
