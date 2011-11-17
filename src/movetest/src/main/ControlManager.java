@@ -1,5 +1,7 @@
 package main;
+import java.awt.Point;
 import java.awt.event.*;
+import java.util.Scanner;
 
 //It seems we don't need this.  We'll see about that later.
 //import javax.swing.Timer;
@@ -11,8 +13,6 @@ public class ControlManager {
 	private char KEY_MOVE_SOUTH = "S".charAt(0);
 	private char KEY_MOVE_EAST = "D".charAt(0);
 	private char KEY_MOVE_WEST = "A".charAt(0);
-	@SuppressWarnings("unused")
-	private char KEY_RESET_RAND = "R".charAt(0);
 	private double smoothTickX = 0, smoothTickY = 0;
 	private boolean anyKeysPressed = false;
 	boolean[] keys = new boolean[525];
@@ -28,11 +28,8 @@ public class ControlManager {
 	private int ticks;
 //>>>>>>> bfeca26aa279c21b663ea90d784efc36af66fb93
 	
-	private PlayerEnt player;
 	
-	
-	public ControlManager(grid panel, PlayerEnt oldPlayer) {
-		player = oldPlayer;
+	public ControlManager(grid panel) {
 	}
 	
 	public void setGraphics(GraphicsManager gM) {
@@ -65,8 +62,10 @@ public class ControlManager {
 		movePlayerByAmt();	
 		updateUtilKeys();
 		
-		if(getKeyStatus("H".charAt(0))) 	gameGraphics.showHelperText(true);
-		else 						gameGraphics.showHelperText(false);
+		if(getKeyStatus("H".charAt(0)))
+			gameGraphics.showHelperText(true);
+		else 
+			gameGraphics.showHelperText(false);
 	}
 	
 	public void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
@@ -119,7 +118,7 @@ public class ControlManager {
 			dx *= 0.7;
 			dy *= 0.7;
 		}
-		player.move(dx, dy);
+		Player.move(dx, dy);
 	
 	}
 	

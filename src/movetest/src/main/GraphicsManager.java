@@ -23,14 +23,14 @@ public class GraphicsManager {
 	private int sparkct = 0;
 	private long ticks = 0;
 	private Graphics temp_g;
-	private Image dbImage;
+	private Image camIcon, dbImage;
 	
 	private Color fadeCol = new Color(0, 0, 0);
 	private Color overlayCol = new Color(fadeCol.getRed(), fadeCol.getGreen(), fadeCol.getBlue(), 0);
 	//Vars with preceding underscore are to be values for render options.  :O
 	private boolean _dither = false, fadeMode = true, helperText = false;
 	
-	public GraphicsManager(grid transPanel, ControlManager oldControls, PlayerEnt oldPlayer) {
+	public GraphicsManager(grid transPanel, ControlManager oldControls) {
 		panel = transPanel;
 		gameControls = oldControls;
 		
@@ -44,13 +44,16 @@ public class GraphicsManager {
 			texture[7] = ImageIO.read(new File("lib/img/grass_end1.png"));
 			texture[8] = ImageIO.read(new File("lib/img/grass_end2.png"));
 			texture[9] = ImageIO.read(new File("lib/img/grass_end3.png"));
+			
+			camIcon = ImageIO.read(new File("lib/img/camicon.png"));
 		} catch(IOException e) {
 			System.out.println("ERROR: Failed to load tile images");
 		}
 	}
 	
-	public void draw(Graphics g, PlayerEnt player, grid panel) {		//The object is intended to tell other objects it's time to re-draw themselves.
+	public void draw(Graphics g, grid panel) {		//The object is intended to tell other objects it's time to re-draw themselves.
 		Graphics2D g2 = (Graphics2D) g;
+		Color oldCol;
 		
 		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_DEFAULT);
 		
@@ -62,16 +65,26 @@ public class GraphicsManager {
 		else
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
 	*/
+		Camera.followPlayer();
+		Camera.moveToPos(Player.getX() + 16, Player.getY() + 16, 1); 
+		Camera.update();
+		g2.translate(-Camera.getAnchorX(), -Camera.getAnchorY());
+		drawGrid(g2);
 		drawBackground(g2);
-		player.draw(g2);
+		oldCol = g2.getColor();
+		g2.setColor(new Color(0, 0, 255, 50));
+		g2.fillRect((int)Math.round(Player.getX() / 32) * 32, (int)Math.round(Player.getY() / 32) * 32, 32, 32);
+		g2.setColor(oldCol);
+		Player.draw(g2);
 		
-		Color oldCol = g2.getColor();
+		oldCol = g2.getColor();
 		fade();
 		g2.setColor(overlayCol);
 		g2.fillRect(0, 0, panel.getWidth(), panel.getHeight());
 		g2.setColor(oldCol);
 		
 		drawEffects(g2);
+		g2.drawImage(camIcon, (int)Camera.getX() - 7, (int)Camera.getY() - 3, null);
 		if(helperText) {
 			//TODO: Find a better way to do the line breaks.
 			g2.drawString("TEST CONTROLS", 50, 50);
@@ -88,12 +101,12 @@ public class GraphicsManager {
 			sparkct = 0;
 		else
 			sparkct++;
-		sparks[sparkct] = new ParticleEmitter(x, y, 10, 10, 10, 0.8, 0.8, 1, false, false, Color.yellow);
+		sparks[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 10, 10, 10, 0.8, 0.8, 1, false, false, Color.yellow);
 		if(sparkct == sparks.length-1) 
 			sparkct = 0;
 		else
 			sparkct++;
-		sparks[sparkct] = new ParticleEmitter(x, y, 10, 5, 5, 0.9, 0.9, 1, false, false, Color.white);
+		sparks[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 10, 5, 5, 0.9, 0.9, 1, false, false, Color.white);
 	
 	}
 	
@@ -101,14 +114,13 @@ public class GraphicsManager {
 		ticks = n;
 	}
 	
-	public void drawPlayer(Graphics g, PlayerEnt player) {
+	public void drawPlayer(Graphics g) {
 		
 	}
 	
 	public void drawBackground(Graphics2D g2) {
 		//Graphics2D g2 inherits all Graphics, but with more tools and function.
 		
-		drawGrid(g2);
 		
 		//Read and load all the tile files into the array.
 		//Set a random seed so random is the same every time it renders.
@@ -117,12 +129,12 @@ public class GraphicsManager {
 		
 		
 		//Draw tiles.  TODO: Clean this shit up.  Algorithm is inverted :\
-		for(int k = 0; k <= 19; k++) {
-			for(int c = 0; c <= 14; c++) {
+		for(int k = 0; k <= Level.getWidth(); k++) {
+			for(int c = 0; c <= Level.getHeight(); c++) {
 				curPosX = k * 32; 	//Current screen x position in pixels.  Increments by 32.
 				curPosY = c * 32;	//Current screen y pos in pixels.  Increments of 32.
 				
-				if((k == 0)  || (k == 19) || (c == 0) || (c == 14)) { 
+				if((k == 0)  || (k == Level.getWidth()) || (c == 0) || (c == Level.getHeight())) { 
 					
 					
 					//If it's on the edge first draw stone underlay
@@ -130,13 +142,13 @@ public class GraphicsManager {
 					
 					//Grass edge pictures
 					//Left column
-					if(k==19) {
+					if(k==Level.getWidth()) {
 						//Top left corner
 						if(c == 0) {
 							g2.drawImage(texture[9], curPosX, curPosY, null);
 						}
 						//In between
-						else if(c != 14) {
+						else if(c != Level.getHeight()) {
 							g2.drawImage(texture[rand.nextInt(2)+7], curPosX, curPosY, null);
 						}
 						//Bottom left corner
@@ -152,7 +164,7 @@ public class GraphicsManager {
 							g2.drawImage(texture[9], curPosX + 32, curPosY, curPosX, curPosY+32, 0, 0, 32, 32, null);
 						}
 						//In between
-						else if(c != 14) {
+						else if(c != Level.getHeight()) {
 							g2.drawImage(texture[rand.nextInt(2)+7], curPosX + 32, curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
 						}
 						//Top left corner
@@ -162,7 +174,7 @@ public class GraphicsManager {
 					}
 					
 					//If it's not far left or right column
-					if(k != 0 && k != 19) {
+					if(k != 0 && k != Level.getWidth()) {
 						//Top row
 						
 						//Funky way of doing it.  The entire window is translated then rotated, the image drawn at origin, then the window position reset.
@@ -173,7 +185,7 @@ public class GraphicsManager {
 							g2.rotate(0.5 * Math.PI);
 						}
 						//Bottom row
-						if(c==14) {
+						if(c==Level.getHeight()) {
 							g2.rotate(0.5 * Math.PI);
 							g2.drawImage(texture[rand.nextInt(2)+7], -16, -16, null);
 							g2.rotate(-0.5 * Math.PI);
@@ -207,6 +219,13 @@ public class GraphicsManager {
 		temp_g.setColor(panel.getForeground());
 		panel.paint(temp_g);
 		g.drawImage(dbImage, 0, 0, panel);
+	}
+	
+	public void print(Graphics2D g2, String text, double x, double y, boolean local) {
+		if(local) 
+			g2.drawString(text, (int)toLocalX(x), (int)toLocalY(y));
+		else
+			g2.drawString(text, (int)x, (int)y);
 	}
 	
 	public void drawEffects(Graphics2D g2) {
@@ -249,5 +268,12 @@ public class GraphicsManager {
 	
 	public void showHelperText(boolean mode) {
 		helperText = mode;
+	}
+	
+	public static double toLocalX(double ox) {
+		return ox + Camera.getAnchorX();
+	}
+	public static double toLocalY(double oy) {
+		return oy + Camera.getAnchorY();
 	}
 }

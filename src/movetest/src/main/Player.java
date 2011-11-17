@@ -3,51 +3,47 @@ import java.awt.*;
 import java.io.*;
 import javax.imageio.ImageIO;
 
-public class PlayerEnt {
-	private double x=0, y=0;
-	private grid panel;
-	private int blockSize;
+public class Player {
+	private static double x, y;
+	private static int blockSize;
 	
-	public PlayerEnt(int nx, int ny, grid oldGrid) {
-		panel = oldGrid;
-		this.x = nx * panel.getWidth();
-		this.y = ny * panel.getHeight();
+	public static void init(int nx, int ny) {
+		x = nx * window.getPanelWidth();
+		y = ny * window.getPanelHeight();
 	}
 	
-	public PlayerEnt() {}
-	
-	public void move(double dx, double dy) {
+	public static void move(double dx, double dy) {
 	//	System.out.println("Player moved locally by "+ dx + ", "+dy);
-		this.x += dx;
-		this.y += dy;
-		this.x = ControlManager.clamp(this.x, blockSize, 640 - blockSize * 2);	//Clamp outputs: it won't move out of bounds!
-		this.y = ControlManager.clamp(this.y, blockSize, 480 - blockSize * 2);
+		x += dx;
+		y += dy;
+		x = ControlManager.clamp(x, blockSize, Level.getWidth() * 32 - blockSize);	//Clamp outputs: it won't move out of bounds!
+		y = ControlManager.clamp(y, blockSize, Level.getHeight() * 32 - blockSize);
 	}
 	
-	public double getX() {
-		return this.x;
+	public static double getX() {
+		return x;
 	}
-	public double getY() {
-		return this.y;
+	public static double getY() {
+		return y;
 	}
 	
-	public void setBlockSize(int s) {
+	public static void setBlockSize(int s) {
 		blockSize = s;
 	}
 	
 	
-	public void draw(Graphics2D g2) {
-		int w = panel.getWidth();
-		int h = panel.getHeight();
+	public static void draw(Graphics2D g2) {
+		int w = window.getPanelWidth();
+		int h = window.getPanelHeight();
 		Color oldColor = g2.getColor();
 		g2.setColor(Color.red);
 		drawPlayer(g2, w, h);
 		g2.setColor(oldColor);
 	}
 	
-	private void drawPlayer(Graphics2D g2, int w, int h) {
-		double posX = this.x;
-		double posY = this.y;
+	private static void drawPlayer(Graphics2D g2, int w, int h) {
+		double posX = x;
+		double posY = y;
 		g2.drawRect((int)posX, (int)posY, ((w+1)/20), ((h+1)/15));
 		
 		//Draw player representation TODO: Animation

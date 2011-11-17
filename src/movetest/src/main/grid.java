@@ -6,10 +6,10 @@ import java.awt.event.*;
 public class grid extends JPanel implements KeyListener, MouseListener, Runnable {
 	private static final long serialVersionUID = 6306113229343973266L;
 	
+	private boolean first = true;
 	private ControlManager gameControl;
 	private GraphicsManager gameGraphics;
 	private int w, h;
-	private PlayerEnt player = new PlayerEnt(5, 5, this);
 	private Image dbImage;
 	private Graphics dbg;
 	private long startTime = System.currentTimeMillis(), curTime;
@@ -46,6 +46,8 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		
 		//Call stop() to stoppit.
 		while(Thread.currentThread() == th) {
+			if(first) 
+				Player.init(5, 5);
 			try {
 				// Add the mouse position to the container element position! Yay.
 				mousePos = new Point((MouseInfo.getPointerInfo().getLocation().x - this.getLocationOnScreen().x), (MouseInfo.getPointerInfo().getLocation().y - this.getLocationOnScreen().y));
@@ -68,6 +70,7 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 				fps_lag = (int)(curTime - System.currentTimeMillis());
 				
 				//Sleep it for the time specified to keep 
+				if(first) first = false;
 				Thread.sleep(Math.max(0, curTime - System.currentTimeMillis()));
 			}
 			catch(InterruptedException ex) {
@@ -94,14 +97,14 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	public grid(Color backColor, int width, int height) {
 		setBackground(backColor);
 		setPreferredSize(new Dimension(width, height));
-		gameControl = new ControlManager(this, player);
-		gameGraphics = new GraphicsManager(this, gameControl, player);
+		gameControl = new ControlManager(this);
+		gameGraphics = new GraphicsManager(this, gameControl);
 		gameControl.setGraphics(gameGraphics);
 		System.out.println("Player initialized");
 		w = width;
 		h = height;
 		
-		player.setBlockSize(width/20);
+		Player.setBlockSize(width/20);
 		
 		start();
 	//	timer = new javax.swing.Timer(40, new MoveListener());
@@ -115,10 +118,10 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	
 	public void paint(Graphics g) {	//Called each time it's redrawn.  Send the gamegraphics a message to draw each component.
 		super.paintComponent(g);
-		gameGraphics.draw(g, player, this);
+		gameGraphics.draw(g, this);
 		frame++;
 		fps_frame++;
-		print(g, "fps: "+fps, 150, 100);
+		gameGraphics.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
 	}
 	
 	
