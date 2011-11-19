@@ -21,8 +21,8 @@ public class Camera {
 	
 	public static double getX() {return pos_x;}
 	public static double getY() {return pos_y;}
-	public static double getAnchorX() {return pos_x - window.getPanelWidth()/2;}
-	public static double getAnchorY() {return pos_y - window.getPanelHeight()/2;}
+	public static int getAnchorX() {return (int)(pos_x - window.getPanelWidth()/2);}
+	public static int getAnchorY() {return (int)(pos_y - window.getPanelHeight()/2);}
 	public static Point getPoint() {return pos;}
 	public static String getString() {return "X: "+pos_x+" Y: "+pos_y;}
 	public static void moveToPos(double x, double y, int ntime) {

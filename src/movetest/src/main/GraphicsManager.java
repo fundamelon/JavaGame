@@ -16,8 +16,8 @@ public class GraphicsManager {
 	
 	BufferedImage[] texture = new BufferedImage[10];
 	grid panel;
-	private Random rand = new Random();
-	private int textureSeed = rand.nextInt(64);
+	private Random seed_rand = new Random(), rand = new Random();
+	private int textureSeed = seed_rand.nextInt(64);
 	private ControlManager gameControls;
 	private ParticleEmitter sparks[] = new ParticleEmitter[500];
 	private int sparkct = 0;
@@ -28,7 +28,7 @@ public class GraphicsManager {
 	private Color fadeCol = new Color(0, 0, 0);
 	private Color overlayCol = new Color(fadeCol.getRed(), fadeCol.getGreen(), fadeCol.getBlue(), 0);
 	//Vars with preceding underscore are to be values for render options.  :O
-	private boolean _dither = false, fadeMode = true, helperText = false;
+	private boolean _dither = false, fadeMode = true, helperText = false, shake = false;
 	
 	public GraphicsManager(grid transPanel, ControlManager oldControls) {
 		panel = transPanel;
@@ -55,42 +55,52 @@ public class GraphicsManager {
 		Graphics2D g2 = (Graphics2D) g;
 		Color oldCol;
 		
-		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_DEFAULT);
-		
-	/*	if(gameControls.getKeyStatus("L".charAt(0)))
-			_dither = !_dither;
-		
-		if(_dither) 
-			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
-		else
-			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
-	*/
+		g2.setRenderingHint(RenderingHints.KEY_RENDERING,
+                       RenderingHints.VALUE_RENDER_SPEED);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                       RenderingHints.VALUE_ANTIALIAS_OFF);
+		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                       RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+		g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
+                       RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+                       RenderingHints.VALUE_COLOR_RENDER_SPEED);
+		g2.setRenderingHint(RenderingHints.KEY_DITHERING,
+                       RenderingHints.VALUE_DITHER_DISABLE);
+                       
 		Camera.followPlayer();
 		Camera.moveToPos(Player.getX() + 16, Player.getY() + 16, 1); 
 		Camera.update();
-		g2.translate(-Camera.getAnchorX(), -Camera.getAnchorY());
+		if(shake) 
+			g2.translate(-Camera.getAnchorX() + (rand.nextInt(10) - 5), -Camera.getAnchorY() + (rand.nextInt(10) - 5));
+		else
+			g2.translate(-Camera.getAnchorX(), -Camera.getAnchorY());
+		shake = false;
 		drawGrid(g2);
 		drawBackground(g2);
 		oldCol = g2.getColor();
 		g2.setColor(new Color(0, 0, 255, 50));
 		g2.fillRect((int)Math.round(Player.getX() / 32) * 32, (int)Math.round(Player.getY() / 32) * 32, 32, 32);
 		g2.setColor(oldCol);
+		
 		Player.draw(g2);
 		
 		oldCol = g2.getColor();
 		fade();
 		g2.setColor(overlayCol);
-		g2.fillRect(0, 0, panel.getWidth(), panel.getHeight());
+		g2.fillRect((int)toLocalX(0), (int)toLocalY(0), (int)toLocalX(window.getPanelWidth()), (int)toLocalY(window.getPanelHeight()));
 		g2.setColor(oldCol);
 		
 		drawEffects(g2);
 		g2.drawImage(camIcon, (int)Camera.getX() - 7, (int)Camera.getY() - 3, null);
+		
 		if(helperText) {
 			//TODO: Find a better way to do the line breaks.
 			g2.drawString("TEST CONTROLS", 50, 50);
-			g2.drawString("R: Randomize texture seed", 50, 60);
-			g2.drawString("9: Fade in", 50, 70);
+			g2.drawString("R: Randomize texture seed", 50, 65);
 			g2.drawString("0: Fade out", 50, 80);
+			g2.drawString("9: Fade in", 50, 95);
+			g2.drawString("8: Shake camera", 50, 110);
 		}
 	}
 	
@@ -101,12 +111,12 @@ public class GraphicsManager {
 			sparkct = 0;
 		else
 			sparkct++;
-		sparks[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 10, 10, 10, 0.8, 0.8, 1, false, false, Color.yellow);
+		sparks[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 20, 10, 10, 0.8, 0.8, 1, false, false, Color.yellow);
 		if(sparkct == sparks.length-1) 
 			sparkct = 0;
 		else
 			sparkct++;
-		sparks[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 10, 5, 5, 0.9, 0.9, 1, false, false, Color.white);
+		sparks[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 0, 5, 5, 0.9, 0.9, 0.1, false, false, Color.orange);
 	
 	}
 	
@@ -124,7 +134,7 @@ public class GraphicsManager {
 		
 		//Read and load all the tile files into the array.
 		//Set a random seed so random is the same every time it renders.
-		rand.setSeed(textureSeed);
+		seed_rand.setSeed(textureSeed);
 		int curPosX = 0, curPosY = 0;
 		
 		
@@ -138,7 +148,7 @@ public class GraphicsManager {
 					
 					
 					//If it's on the edge first draw stone underlay
-					g2.drawImage(texture[rand.nextInt(3)+4], curPosX, curPosY, curPosX + 32, curPosY+32, 0, 0, 32, 32, null);
+					g2.drawImage(texture[seed_rand.nextInt(3)+4], curPosX, curPosY, curPosX + 32, curPosY+32, 0, 0, 32, 32, null);
 					
 					//Grass edge pictures
 					//Left column
@@ -149,7 +159,7 @@ public class GraphicsManager {
 						}
 						//In between
 						else if(c != Level.getHeight()) {
-							g2.drawImage(texture[rand.nextInt(2)+7], curPosX, curPosY, null);
+							g2.drawImage(texture[seed_rand.nextInt(2)+7], curPosX, curPosY, null);
 						}
 						//Bottom left corner
 						else {
@@ -165,7 +175,7 @@ public class GraphicsManager {
 						}
 						//In between
 						else if(c != Level.getHeight()) {
-							g2.drawImage(texture[rand.nextInt(2)+7], curPosX + 32, curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
+							g2.drawImage(texture[seed_rand.nextInt(2)+7], curPosX + 32, curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
 						}
 						//Top left corner
 						else {
@@ -181,13 +191,13 @@ public class GraphicsManager {
 						g2.translate(curPosX + 16, curPosY + 16);
 						if(c==0) {
 							g2.rotate(-0.5 * Math.PI);
-							g2.drawImage(texture[rand.nextInt(2)+7], -16, -16, null);
+							g2.drawImage(texture[seed_rand.nextInt(2)+7], -16, -16, null);
 							g2.rotate(0.5 * Math.PI);
 						}
 						//Bottom row
 						if(c==Level.getHeight()) {
 							g2.rotate(0.5 * Math.PI);
-							g2.drawImage(texture[rand.nextInt(2)+7], -16, -16, null);
+							g2.drawImage(texture[seed_rand.nextInt(2)+7], -16, -16, null);
 							g2.rotate(-0.5 * Math.PI);
 						}
 						g2.translate(-curPosX - 16, -curPosY - 16);
@@ -195,7 +205,12 @@ public class GraphicsManager {
 				}
 				else {
 					//Just draw a grass tile if it's not a boundary
-					g2.drawImage(texture[rand.nextInt(3)+1], curPosX, curPosY, null);
+					g2.translate(curPosX + 16, curPosY + 16);
+					double rot = ((seed_rand.nextInt(8) / 2.0) - 2);
+					g2.rotate(rot * Math.PI);
+					g2.drawImage(texture[seed_rand.nextInt(3)+1], -16, -16, null);
+					g2.rotate(rot * -Math.PI);
+					g2.translate(-curPosX - 16, -curPosY - 16);
 				}
 			}
 			if(gameControls.getKeyStatus("R".charAt(0))) {
@@ -214,7 +229,7 @@ public class GraphicsManager {
 		}
 		
 		//Paint the screen image after the screen is redrawn.  Don't touch unless you know what you're doing!
-		temp_g.setColor(new Color(panel.getBackground().getRed(), panel.getBackground().getGreen(), panel.getBackground().getBlue(), 256));
+		temp_g.setColor(new Color(panel.getBackground().getRed(), panel.getBackground().getGreen(), panel.getBackground().getBlue(), 255));
 		temp_g.fillRect(0, 0, panel.getSize().width, panel.getSize().height);
 		temp_g.setColor(panel.getForeground());
 		panel.paint(temp_g);
@@ -268,6 +283,10 @@ public class GraphicsManager {
 	
 	public void showHelperText(boolean mode) {
 		helperText = mode;
+	}
+	
+	public void shake() {
+		shake = true;
 	}
 	
 	public static double toLocalX(double ox) {

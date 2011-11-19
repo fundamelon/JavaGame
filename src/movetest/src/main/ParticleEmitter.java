@@ -21,7 +21,7 @@ public class ParticleEmitter {
 		this(x, y, amt, 0.1, 0,1, 0.1, 100, repeat, gravity, Color.yellow);
 	}
 	
-	public ParticleEmitter(int x, int y, int amt, double rx, double ry, double dcx, double dcy, int life, boolean repeat, boolean gravity, Color newCol) {
+	public ParticleEmitter(int x, int y, int amt, double rx, double ry, double dcx, double dcy, double life, boolean repeat, boolean gravity, Color newCol) {
 		ex = x;
 		ey = y;
 		rate_x = rx;
@@ -34,13 +34,13 @@ public class ParticleEmitter {
 		initParticles(x, y, rx, ry, dcx, dcy, tick, life, gravity, newCol);
 	}
 	
-	public void initParticles(int ox, int oy, double rx, double ry, double dcx, double dcy, long t, int life, boolean gravity, Color newCol) {
+	public void initParticles(int ox, int oy, double rx, double ry, double dcx, double dcy, long t, double life, boolean gravity, Color newCol) {
 		for(int i = 0; i < particles.length; i++ ) {
 			createParticle(i, ox, oy, rx, ry, dcx, dcy, t, life, gravity, newCol);
 		}
 	}
 	
-	public void createParticle(int i, int ox, int oy, double rx, double ry, double dcx, double dcy, long t, int life, boolean gravity, Color newColor) {
+	public void createParticle(int i, int ox, int oy, double rx, double ry, double dcx, double dcy, long t, double life, boolean gravity, Color newColor) {
 		int ang = rand.nextInt() * 360;
 		double dist = ((rand.nextDouble() / 2) + 0.25);
 		rx = Math.cos(ang) * dist * rx;

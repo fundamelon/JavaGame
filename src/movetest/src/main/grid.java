@@ -2,6 +2,7 @@ package main;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferStrategy;
 
 public class grid extends JPanel implements KeyListener, MouseListener, Runnable {
 	private static final long serialVersionUID = 6306113229343973266L;
@@ -9,6 +10,7 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	private boolean first = true;
 	private ControlManager gameControl;
 	private GraphicsManager gameGraphics;
+	private BufferStrategy buffer;
 	private int w, h;
 	private Image dbImage;
 	private Graphics dbg;
@@ -61,17 +63,17 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 			//Tell each to set its amount to fps_lag to compensate for lag!
 			gameControl.clk(fps_lag);
 			gameGraphics.clk(fps_lag);
-			repaint();
+			refresh();
 			
 			try {
-				//Add delay to see how far we've got
-				curTime += delay;
 				//Compute our elapsed time from last frame
-				fps_lag = (int)(curTime - System.currentTimeMillis());
+				fps_lag = (int)(System.currentTimeMillis() - curTime);
+				//Add delay to see how far we've got
+				curTime = System.currentTimeMillis();
 				
 				//Sleep it for the time specified to keep 
 				if(first) first = false;
-				Thread.sleep(Math.max(0, curTime - System.currentTimeMillis()));
+				Thread.sleep(Math.max(0, 0));
 			}
 			catch(InterruptedException ex) {
 				System.out.println("I say! Someone seems to have interrupted me!");
@@ -124,6 +126,17 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		gameGraphics.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
 	}
 	
+	public void refresh() {
+		Graphics2D g = null;
+		g = (Graphics2D)window.buffer.getDrawGraphics();
+		g.translate(0, this.getLocationOnScreen().y - window.getFrame().getLocationOnScreen().y);
+		gameGraphics.draw((Graphics2D)g, this);
+		gameGraphics.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
+		g.dispose();
+		window.buffer.show();
+		frame++;
+		fps_frame++;
+	}
 	
 	
 	public void print(Graphics g, String text, int x, int y) {

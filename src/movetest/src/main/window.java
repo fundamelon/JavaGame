@@ -1,16 +1,21 @@
 package main;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferStrategy;
 
 public class window {	
 	private static grid panel;
 	private static JFrame theGUI;
+	public static BufferStrategy buffer;
 	public static void main(String [] args){
 		theGUI = new JFrame();
 		theGUI.setTitle("Grid Movement Test");
 		theGUI.setSize(900, 900);
 		theGUI.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		theGUI.setIconImage(new ImageIcon().getImage());
+		theGUI.setVisible(true);
+		theGUI.createBufferStrategy(2);
+		buffer = theGUI.getBufferStrategy();
 		panel = new grid(Color.white, 640, 480);
 		theGUI.addKeyListener(panel);
 		theGUI.addMouseListener(panel);
@@ -20,9 +25,12 @@ public class window {
 
 		theGUI.setResizable(false);
 		theGUI.pack();	//Important function to keep interior dimensions even with the saiz of window.
-		theGUI.setVisible(true);
 		
 	//	theGUI.createBufferStrategy(2);
+	}
+	
+	public static JFrame getFrame() {
+		return theGUI;
 	}
 	
 	public static int getPanelWidth() {

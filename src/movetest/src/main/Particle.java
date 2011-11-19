@@ -6,13 +6,13 @@ import java.util.Random;
 public class Particle {
 	
 	//Placeholder that only knows its own values and can change them according to a model.
-	private double x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y;
-	private int life, ang = 0;
+	private double x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y, life;
+	private int ang = 0;
 	private long startTick, lastTick;
 	private boolean alive, trace, grav;
 	private Color curCol;
 	
-	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, int life, boolean gravity) {
+	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, double life, boolean gravity) {
 		this.x = x;
 		this.y = y;
 		this.rate_x = rx;
@@ -27,7 +27,7 @@ public class Particle {
 		this.alive = true;
 	}
 	
-	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, int life, boolean gravity, Color newColor) {
+	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, double life, boolean gravity, Color newColor) {
 		this(x, y, rx, ry, dcx, dcy, st, life, gravity);
 		this.curCol = newColor;
 		this.setAlpha(100);
@@ -40,7 +40,7 @@ public class Particle {
 	public void setRateY(double nrate_y) {rate_y = nrate_y;}
 	public void setDecX(double ndec_x) {dec_x = ndec_x;}
 	public void setDecY(double ndec_y) {dec_y = ndec_y;}
-	public void setLife(int nlife) {life = nlife;}
+	public void setLife(double nlife) {life = nlife;}
 	public void setColor(Color nC) {curCol = nC;}
 	
 	public void setAlpha(int n) {curCol = new Color(curCol.getRed(), curCol.getGreen(), curCol.getBlue(), n);}
@@ -51,7 +51,7 @@ public class Particle {
 	public double getRateY() {return rate_y; }
 	public double getDecayX() {return dec_x; }
 	public double getDecayY() {return dec_y; }
-	public int getLife() {return life;}
+	public double getLife() {return life;}
 	public boolean getStatus() {return alive;}
 	public boolean getTrace() {return trace;}
 	public long getStartTime() {return startTick;}
@@ -89,8 +89,8 @@ public class Particle {
 			Random rand = new Random();
 			if(ang<360) ang+=Math.round(rand.nextDouble()); else ang = 0;
 			
-			this.rate_x += Math.cos(ang) / 5;
-			this.rate_y += Math.sin(ang) / 5;
+			this.rate_x += Math.cos(ang) / 0.5;
+			this.rate_y += Math.sin(ang) / 0.5;
 		//	this.rate_y += 1;
 			
 			//Just makes the particles fan out on top and float upwards.
@@ -98,7 +98,7 @@ public class Particle {
 				this.y -= Math.abs(rate_y / 2);
 				if(this.y < trace_y) {this.y += rate_y;}
 			}
-			this.setColor(new Color(this.getRed(), this.getGreen(), this.getBlue(), Math.max(this.getAlpha() - this.getLife(), 0)));
+			this.setColor(new Color(this.getRed(), this.getGreen(), this.getBlue(), (int)Math.max(this.getAlpha() - this.getLife(), 0)));
 			if(this.getAlpha() == 0) {this.kill();}
 			
 		//	System.out.println(tick - lastTick);

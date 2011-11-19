@@ -23,7 +23,7 @@ public class ControlManager {
 	public double distanceny;
 	public double distancepx;
 	public double distancenx;
-	private long tick, lastTick;
+	private long tick, lastTick, tickdiff;
 //=======
 	private int ticks;
 //>>>>>>> bfeca26aa279c21b663ea90d784efc36af66fb93
@@ -46,7 +46,7 @@ public class ControlManager {
 	*/
 	
 	//Player move amount and move timer varibabelz
-	private double playerMoveAmt = 3;
+	private double playerMoveAmt = 1.4;
 //	private javax.swing.Timer playerMoveClk;  
 	
 	
@@ -66,6 +66,9 @@ public class ControlManager {
 			gameGraphics.showHelperText(true);
 		else 
 			gameGraphics.showHelperText(false);
+		
+		if(getKeyStatus("8".charAt(0)))
+			gameGraphics.shake();
 	}
 	
 	public void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
@@ -118,7 +121,7 @@ public class ControlManager {
 			dx *= 0.7;
 			dy *= 0.7;
 		}
-		Player.move(dx, dy);
+		Player.move(dx * (tick / 10.0) , dy * (tick / 10.0));
 	
 	}
 	
