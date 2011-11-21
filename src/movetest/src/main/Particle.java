@@ -89,8 +89,12 @@ public class Particle {
 			Random rand = new Random();
 			if(ang<360) ang+=Math.round(rand.nextDouble()); else ang = 0;
 			
-			this.rate_x += Math.cos(ang) / 0.5;
-			this.rate_y += Math.sin(ang) / 0.5;
+			//Various thingies you can use to modify each particles random movement.
+			
+		//	this.rate_x += Math.cos(ang) / 0.5;
+		//	this.rate_y += Math.sin(ang) / 0.5;
+			this.rate_x += rand.nextDouble() * 2 - 1;
+			this.rate_y += rand.nextDouble() * 2 - 1;
 		//	this.rate_y += 1;
 			
 			//Just makes the particles fan out on top and float upwards.

@@ -14,8 +14,8 @@ public class window {
 		theGUI.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		theGUI.setIconImage(new ImageIcon().getImage());
 		theGUI.setVisible(true);
-		theGUI.createBufferStrategy(2);
-		buffer = theGUI.getBufferStrategy();
+		theGUI.createBufferStrategy(2); //Double buffering initialized.
+		buffer = theGUI.getBufferStrategy(); //Get this frame's buffer object.
 		panel = new grid(Color.white, 640, 480);
 		theGUI.addKeyListener(panel);
 		theGUI.addMouseListener(panel);

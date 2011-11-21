@@ -20,10 +20,11 @@ public class GraphicsManager {
 	private int textureSeed = seed_rand.nextInt(64);
 	private ControlManager gameControls;
 	private ParticleEmitter sparks[] = new ParticleEmitter[500];
-	private int sparkct = 0;
+	private int sparkct = 0, particle_count = 0;
 	private long ticks = 0;
 	private Graphics temp_g;
 	private Image camIcon, dbImage;
+	private int fps_lag;
 	
 	private Color fadeCol = new Color(0, 0, 0);
 	private Color overlayCol = new Color(fadeCol.getRed(), fadeCol.getGreen(), fadeCol.getBlue(), 0);
@@ -34,6 +35,7 @@ public class GraphicsManager {
 		panel = transPanel;
 		gameControls = oldControls;
 		
+		//Try and load the textures.
 		try {
 			texture[1] = ImageIO.read(new File("lib/img/grass1.png"));
 			texture[2] = ImageIO.read(new File("lib/img/grass2.png"));
@@ -51,10 +53,11 @@ public class GraphicsManager {
 		}
 	}
 	
-	public void draw(Graphics g, grid panel) {		//The object is intended to tell other objects it's time to re-draw themselves.
+	public void draw(Graphics g, grid panel) {
 		Graphics2D g2 = (Graphics2D) g;
 		Color oldCol;
 		
+		//Various rendering options to speed it up.
 		g2.setRenderingHint(RenderingHints.KEY_RENDERING,
                        RenderingHints.VALUE_RENDER_SPEED);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -68,16 +71,23 @@ public class GraphicsManager {
 		g2.setRenderingHint(RenderingHints.KEY_DITHERING,
                        RenderingHints.VALUE_DITHER_DISABLE);
                        
+		//Set the camera to follow the player with the players coordinates, then update the camera.
 		Camera.followPlayer();
 		Camera.moveToPos(Player.getX() + 16, Player.getY() + 16, 1); 
 		Camera.update();
+		
+		//Random offsets "shake" the camera.
 		if(shake) 
 			g2.translate(-Camera.getAnchorX() + (rand.nextInt(10) - 5), -Camera.getAnchorY() + (rand.nextInt(10) - 5));
 		else
 			g2.translate(-Camera.getAnchorX(), -Camera.getAnchorY());
 		shake = false;
+		
+		//Draw background and grid first.
 		drawGrid(g2);
 		drawBackground(g2);
+		
+		//Next draw a square representing the tile the player is currently on.
 		oldCol = g2.getColor();
 		g2.setColor(new Color(0, 0, 255, 50));
 		g2.fillRect((int)Math.round(Player.getX() / 32) * 32, (int)Math.round(Player.getY() / 32) * 32, 32, 32);
@@ -85,15 +95,18 @@ public class GraphicsManager {
 		
 		Player.draw(g2);
 		
+		//This will update the fade amount then apply a dark box to the entire viewport based on the fade value.
 		oldCol = g2.getColor();
 		fade();
 		g2.setColor(overlayCol);
 		g2.fillRect((int)toLocalX(0), (int)toLocalY(0), (int)toLocalX(window.getPanelWidth()), (int)toLocalY(window.getPanelHeight()));
 		g2.setColor(oldCol);
 		
+		//Effects are drawn last along with the camera center point icon.
 		drawEffects(g2);
 		g2.drawImage(camIcon, (int)Camera.getX() - 7, (int)Camera.getY() - 3, null);
 		
+		//Draw helper text menu if it's called upon.
 		if(helperText) {
 			//TODO: Find a better way to do the line breaks.
 			g2.drawString("TEST CONTROLS", 50, 50);
@@ -116,22 +129,22 @@ public class GraphicsManager {
 			sparkct = 0;
 		else
 			sparkct++;
-		sparks[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 0, 5, 5, 0.9, 0.9, 0.1, false, false, Color.orange);
+		sparks[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 0, 5, 5, 0.9, 0.9, 0.1, false, false, Color.gray);
 	
 	}
 	
-	public void clk(long n) {
-		ticks = n;
+	//Update the fps lag.
+	public void clk(int n) {
+		fps_lag = n;
 	}
 	
+	//unused
 	public void drawPlayer(Graphics g) {
 		
 	}
 	
-	public void drawBackground(Graphics2D g2) {
-		//Graphics2D g2 inherits all Graphics, but with more tools and function.
-		
-		
+	//Draw the tile textures used on the background.
+	public void drawBackground(Graphics2D g2) {		
 		//Read and load all the tile files into the array.
 		//Set a random seed so random is the same every time it renders.
 		seed_rand.setSeed(textureSeed);
@@ -220,22 +233,7 @@ public class GraphicsManager {
 		
 	}
 	
-	//BROKEN - DO NOT USE!
-	public void setBuffer(Graphics g) {
-		//Capture the screen image
-		if(dbImage == null) {
-			dbImage = panel.createImage(panel.getSize().width, panel.getSize().height);
-			temp_g = dbImage.getGraphics();
-		}
-		
-		//Paint the screen image after the screen is redrawn.  Don't touch unless you know what you're doing!
-		temp_g.setColor(new Color(panel.getBackground().getRed(), panel.getBackground().getGreen(), panel.getBackground().getBlue(), 255));
-		temp_g.fillRect(0, 0, panel.getSize().width, panel.getSize().height);
-		temp_g.setColor(panel.getForeground());
-		panel.paint(temp_g);
-		g.drawImage(dbImage, 0, 0, panel);
-	}
-	
+	//Display strings.
 	public void print(Graphics2D g2, String text, double x, double y, boolean local) {
 		if(local) 
 			g2.drawString(text, (int)toLocalX(x), (int)toLocalY(y));
@@ -243,6 +241,7 @@ public class GraphicsManager {
 			g2.drawString(text, (int)x, (int)y);
 	}
 	
+	//Just update every spark if it's not yet dead.
 	public void drawEffects(Graphics2D g2) {
 		for(int i = 0; i < sparks.length; i++) {
 			if(sparks[i] != null) 
@@ -266,29 +265,49 @@ public class GraphicsManager {
 		g.setColor(oldColor);
 	}
 	
+	//Mutator to update boolean fade variable.
 	public void setFade(boolean mode) {
 		fadeMode = mode;
 	}
 	
+	//Update overlay alpha based on time and boolean fade variable.
 	public void fade() {
 		if(fadeMode) {
-			if(overlayCol.getAlpha() > 0)
-				overlayCol = new Color(overlayCol.getRed(), overlayCol.getGreen(), overlayCol.getBlue(), overlayCol.getAlpha() - 1);
+			if(overlayCol.getAlpha() - fps_lag/10 > 0)
+				overlayCol = new Color(overlayCol.getRed(), overlayCol.getGreen(), overlayCol.getBlue(), overlayCol.getAlpha() - fps_lag / 10);
+			else
+				overlayCol = new Color(overlayCol.getRed(), overlayCol.getGreen(), overlayCol.getBlue(), 0);
+				
 		}
 		else {
-			if(overlayCol.getAlpha() < 255)
-				overlayCol = new Color(overlayCol.getRed(), overlayCol.getGreen(), overlayCol.getBlue(), overlayCol.getAlpha() + 1);
+			if(overlayCol.getAlpha() + fps_lag/10 < 255)
+				overlayCol = new Color(overlayCol.getRed(), overlayCol.getGreen(), overlayCol.getBlue(), overlayCol.getAlpha() + fps_lag / 10);
+			else
+				overlayCol = new Color(overlayCol.getRed(), overlayCol.getGreen(), overlayCol.getBlue(), 255);
 		}
+	}
+	
+	//Ask each emitter to total its particles, then total that to get number of all particles.
+	public int getParticleCount() {
+		particle_count = 0;
+		for(int i = 0; i < sparks.length; i++) {
+			if(sparks[i] != null)
+				particle_count += sparks[i].getParticleCount();
+		}
+		return particle_count;
 	}
 	
 	public void showHelperText(boolean mode) {
 		helperText = mode;
 	}
 	
+	//Make shake true just for this one execution (it's set to false every execution)
 	public void shake() {
 		shake = true;
 	}
 	
+	//Important functions: they add the camera's x and y to the given GLOBAL coordinates
+	//resulting in LOCAL coordinates relative to the screen itself.
 	public static double toLocalX(double ox) {
 		return ox + Camera.getAnchorX();
 	}

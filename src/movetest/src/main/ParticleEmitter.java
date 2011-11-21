@@ -43,6 +43,8 @@ public class ParticleEmitter {
 	public void createParticle(int i, int ox, int oy, double rx, double ry, double dcx, double dcy, long t, double life, boolean gravity, Color newColor) {
 		int ang = rand.nextInt() * 360;
 		double dist = ((rand.nextDouble() / 2) + 0.25);
+		
+		//Random direction from origin of emitter.
 		rx = Math.cos(ang) * dist * rx;
 		ry = Math.sin(ang) * dist * ry;
 		particles[i] = new Particle(ox, oy, rx, ry, dcx, dcy, t, life, gravity, newColor);
@@ -66,10 +68,15 @@ public class ParticleEmitter {
 				
 				oldColor = g2.getColor();
 				g2.setColor(new Color(particles[i].getRed(), particles[i].getGreen(), particles[i].getBlue(), particles[i].getAlpha()));
+				
+				//Update particle position
 				updatePos(i, tick);
 				
+				//Draw a trace line
 				if(particles[i].getTrace() | true)
 					g2.drawLine((int)particles[i].getX(), (int)particles[i].getY(), (int)particles[i].getTraceX(), (int)particles[i].getTraceY());
+				
+				//Draw the particle
 				g2.fillRect((int)particles[i].getX(), (int)particles[i].getY(), 1, 1);
 				g2.setColor(oldColor);
 			}
@@ -79,5 +86,15 @@ public class ParticleEmitter {
 			//	createParticle(i, ex, ey, rate_x, rate_y, decay_x, decay_y, tick, life, grav);
 			}
 		}
+	}
+	
+	//Total up the particles this emitter has.
+	public int getParticleCount() {
+		int c = 0;
+		for(int i = 0; i < particles.length; i++) {
+			if(particles[i].getStatus())
+				c++;
+		}
+		return c;
 	}
 }

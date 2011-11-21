@@ -73,7 +73,7 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 				
 				//Sleep it for the time specified to keep 
 				if(first) first = false;
-				Thread.sleep(Math.max(0, 0));
+				Thread.sleep(Math.max(0, 20));
 			}
 			catch(InterruptedException ex) {
 				System.out.println("I say! Someone seems to have interrupted me!");
@@ -117,8 +117,8 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	{
 	}
 	
-	
-	public void paint(Graphics g) {	//Called each time it's redrawn.  Send the gamegraphics a message to draw each component.
+	//OBSOLETE
+	public void paint(Graphics g) {
 		super.paintComponent(g);
 		gameGraphics.draw(g, this);
 		frame++;
@@ -126,14 +126,24 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		gameGraphics.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
 	}
 	
+	//Alternative for paint(g)
 	public void refresh() {
 		Graphics2D g = null;
+		//Get the graphics of the buffer object for drawing on.
 		g = (Graphics2D)window.buffer.getDrawGraphics();
-		g.translate(0, this.getLocationOnScreen().y - window.getFrame().getLocationOnScreen().y);
+		//Translate the buffer area to the panel area.
+		g.translate(this.getLocationOnScreen().x - window.getFrame().getLocationOnScreen().x, this.getLocationOnScreen().y - window.getFrame().getLocationOnScreen().y);
 		gameGraphics.draw((Graphics2D)g, this);
 		gameGraphics.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
+		gameGraphics.print((Graphics2D)g, "particles: " + gameGraphics.getParticleCount(), 150.0, 115.0, true);
+		
+		//You don't need g anymore, it'd just gobble up memory
 		g.dispose();
+		
+		//Copy buffer to the window area.
 		window.buffer.show();
+		
+		//Increment frame counter.
 		frame++;
 		fps_frame++;
 	}

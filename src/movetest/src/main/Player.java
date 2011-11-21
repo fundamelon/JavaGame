@@ -8,6 +8,7 @@ public class Player {
 	private static int blockSize;
 	
 	public static void init(int nx, int ny) {
+		//Since main() is unavailable and it has no constructor, a function to initialize the static player is necessary.
 		x = nx * window.getPanelWidth();
 		y = ny * window.getPanelHeight();
 	}
