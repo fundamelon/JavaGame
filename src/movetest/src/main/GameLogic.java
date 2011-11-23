@@ -10,6 +10,23 @@ public class GameLogic {
 	
 	static int damage;
 	//s is the weapon variable, when changed it changes the weapon and damage the player inflicts
+	static boolean hit;
+	static int s;
+	static int hitdamage;
+	
+	public static void hit(boolean hit){
+		if(hit){
+			hitdamage = damage;
+		}
+		else{
+			hitdamage = 0;
+		}
+	}
+	
+
+	
+	
+	
 	public static void sword(int s){
 		if(s == 0){
 			System.out.println("Player has no sword.");
@@ -22,24 +39,22 @@ public class GameLogic {
 		}
 	}
 
-	public static void damage(boolean hit, int s){
+	public static int damage(){
 		if(hit){
 			if(s == 0){
 				damage = 1;
-				return damage;
 				//player should have fists out
 			}
 			else if(s == 1){
 				damage = 3;
-				return damage;
 				//player should have a sword
 			}
 			else{
 				damage = 2;
-				return damage;
 				//player has an undecided weapon
-			}
+			} 
 		}
+		return damage;
 
 	}
 
