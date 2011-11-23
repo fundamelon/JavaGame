@@ -46,9 +46,14 @@ public class ControlManager {
 	*/
 	
 	//Player move amount and move timer varibabelz
-	private double playerMoveAmt = 1.4;
-//	private javax.swing.Timer playerMoveClk;  
+	//private double playerMoveAmt = 1.4;
+//	private javax.swing.Timer playerMoveClk; 
+	static double playerMoveAmt = 1.4;
+		
 	
+	public static void setplayerMovetAmt(int move){
+			playerMoveAmt = move;
+	}
 	
 	//Just an accessor in case we need it
 	public double getPlayerMoveAmt() {
@@ -195,10 +200,7 @@ public class ControlManager {
 	public static double clamp(double i, int high, int low) {
 		return Math.max (high, Math.min (i, low));
 	}
-	//backwards clamp win?
-	//public static double stop(double i, int high, int low) {
-	//	return Math.min (high, Math.max (i, low))
-	//}
+
 	
 	
 	

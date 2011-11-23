@@ -19,6 +19,7 @@ public class Player {
 		y += dy;
 		x = ControlManager.clamp(x, blockSize, Level.getWidth() * 32 - blockSize);	//Clamp outputs: it won't move out of bounds!
 		y = ControlManager.clamp(y, blockSize, Level.getHeight() * 32 - blockSize);
+		
 	}
 	
 	public static double getX() {

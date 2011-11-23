@@ -1,26 +1,35 @@
 package main;
 
 public class Block {
-/*
-	private int x, y, x1, y1;
+
+	static double x;
+	static double y;
+	static double x1;
+	static double y1;
+
+	public Block(){
+		x1 = 25;
+		y1 = 25;
+	}
+
+
+	public static double getX() {return x;}
+	public static double getY() {return y;}
+
 		
-	public Block() {
-			this(0, 0)
+	public void stop(){
+		if(x1 == x && y1 == y){
+			ControlManager.setplayerMovetAmt(0);
 		}
-		
-	public Block() {
-		x = PlayerEnt.getX();
-		y = PlayerEnt.getY();
-		
 	}
 	
-	public double stop(){
-		if(x == 25 && y == 25)
-			x1 = 24;
-			y1 = 24;
-			return x1, y1;
+	public void location(){
+		System.out.println(x + " " + y);  //should outprint location
 	}
-	*/
-}
 
-//i started but i cant launch it... ill continue/ finish tomorrow or friday. i figured it out, just time to implement 
+	
+}
+	
+	
+
+
