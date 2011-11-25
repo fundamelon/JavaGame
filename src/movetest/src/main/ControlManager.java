@@ -9,30 +9,30 @@ import java.util.Scanner;
 public class ControlManager {
 	
 	//declaration of characters to watch for 
-	private char KEY_MOVE_NORTH = "W".charAt(0);
-	private char KEY_MOVE_SOUTH = "S".charAt(0);
-	private char KEY_MOVE_EAST = "D".charAt(0);
-	private char KEY_MOVE_WEST = "A".charAt(0);
-	private double smoothTickX = 0, smoothTickY = 0;
-	private boolean anyKeysPressed = false;
-	boolean[] keys = new boolean[525];
+	private static char KEY_MOVE_NORTH = "W".charAt(0);
+	private static char KEY_MOVE_SOUTH = "S".charAt(0);
+	private static char KEY_MOVE_EAST = "D".charAt(0);
+	private static char KEY_MOVE_WEST = "A".charAt(0);
+	private static double smoothTickX = 0, smoothTickY = 0;
+	private static boolean anyKeysPressed = false;
+	static boolean[] keys = new boolean[525];
 	
-	private GraphicsManager gameGraphics;
+	private static GraphicsManager gameGraphics;
 //<<<<<<< HEAD
 	public double distancepy;
 	public double distanceny;
 	public double distancepx;
 	public double distancenx;
-	private long tick, lastTick, tickdiff;
+	private static long tick, lastTick, tickdiff;
 //=======
 	private int ticks;
 //>>>>>>> bfeca26aa279c21b663ea90d784efc36af66fb93
 	
 	
-	public ControlManager(grid panel) {
+	public static ControlManager(grid panel) {
 	}
 	
-	public void setGraphics(GraphicsManager gM) {
+	public static void setGraphics(GraphicsManager gM) {
 		gameGraphics = gM;
 	}
 	
@@ -56,12 +56,12 @@ public class ControlManager {
 	}
 	
 	//Just an accessor in case we need it
-	public double getPlayerMoveAmt() {
+	public static double getPlayerMoveAmt() {
 		return playerMoveAmt; 
 	}
 	
 	//Fire the move function when the timer is triggered.
-	public void clk(long n) {
+	public static void clk(long n) {
 		lastTick = tick;
 		tick = n;
 		movePlayerByAmt();	
@@ -76,7 +76,7 @@ public class ControlManager {
 			gameGraphics.shake();
 	}
 	
-	public void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
+	public static void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
 		//dx and dy are distance x and y respectively - these are sent to the player.
 		double dx=0, dy=0;
 
@@ -130,7 +130,7 @@ public class ControlManager {
 	
 	}
 	
-	public void updateUtilKeys() {
+	public static void updateUtilKeys() {
 		if(keys["0".charAt(0)]) 
 			gameGraphics.setFade(false);
 		
@@ -142,7 +142,7 @@ public class ControlManager {
 	//Character array of keys pressed.
 	
 	//Called when grid gets a key down event.
-	public void keyDown(int kC) {
+	public static void keyDown(int kC) {
 		anyKeysPressed = true;
 		updateUtilKeys();
 		
@@ -160,7 +160,7 @@ public class ControlManager {
 			
 		}
 	}
-	public void keyUp(int kC) {  
+	public static void keyUp(int kC) {  
 		// kC is ASCII char code.
 		//Remove the key from the boolean array.
 		keys[kC] = false;		
@@ -174,26 +174,26 @@ public class ControlManager {
 	}
 	
 	//Some backup methods - just in case we need them.
-	public boolean getKeyStatus(int kC) {
+	public static boolean getKeyStatus(int kC) {
 		return keys[kC];
 	}
 	
-	public boolean getKeyStatus(char kC) {
+	public static boolean getKeyStatus(char kC) {
 		return keys[kC];
 	}
 	
-	public void setKeyStatus(int kC, boolean newState) {
+	public static void setKeyStatus(int kC, boolean newState) {
 		keys[kC] = newState;
 	}
 	
-	public void setKeyStatus(char kC, boolean newState) {
+	public static void setKeyStatus(char kC, boolean newState) {
 		keys[kC] = newState;
 	}
 	
-	public char getKeyN() {return KEY_MOVE_NORTH;}
-	public char getKeyS() {return KEY_MOVE_SOUTH;}
-	public char getKeyE() {return KEY_MOVE_EAST;}
-	public char getKeyW() {return KEY_MOVE_WEST;}
+	public static char getKeyN() {return KEY_MOVE_NORTH;}
+	public static char getKeyS() {return KEY_MOVE_SOUTH;}
+	public static char getKeyE() {return KEY_MOVE_EAST;}
+	public static char getKeyW() {return KEY_MOVE_WEST;}
 	
 	//Function will return the number i clamped between high and low.  Used for now for boundary clamping
 	//TODO: Rewrite collision algorithm!  This is just a hack.
