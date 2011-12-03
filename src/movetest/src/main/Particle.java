@@ -6,17 +6,18 @@ import java.util.Random;
 public class Particle {
 	
 	//Placeholder that only knows its own values and can change them according to a model.
-	private double x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y;
-	private int life, ang = 0;
+	private double x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y, life, mouse_x, mouse_y, start_x, start_y;
+	private double ang = 0, ang2=180;
 	private long startTick, lastTick;
 	private boolean alive, trace, grav;
 	private Color curCol;
+	private boolean[] modifiers = new boolean[10];
 	
-	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, int life, boolean gravity) {
+	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, double life, boolean gravity) {
 		this.x = x;
 		this.y = y;
 		this.rate_x = rx;
-		this.rate_y = ry;
+		this.rate_y = gravity ? -Math.abs(ry) : ry;
 		this.dec_x = dcx;
 		this.dec_y = dcy;
 		this.startTick = st;
@@ -27,12 +28,17 @@ public class Particle {
 		this.alive = true;
 	}
 	
-	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, int life, boolean gravity, Color newColor) {
+	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, double life, boolean gravity, Color newColor) {
 		this(x, y, rx, ry, dcx, dcy, st, life, gravity);
 		this.curCol = newColor;
 		this.setAlpha(100);
+		this.start_x = x;
+		this.start_y = y;
 	}
 	
+	public void toggleModifier(int n) {
+		modifiers[n] = !modifiers[n];
+	}
 	
 	public void setX(double nx) {x = nx;}
 	public void setY(double ny) {y = ny;}
@@ -40,7 +46,7 @@ public class Particle {
 	public void setRateY(double nrate_y) {rate_y = nrate_y;}
 	public void setDecX(double ndec_x) {dec_x = ndec_x;}
 	public void setDecY(double ndec_y) {dec_y = ndec_y;}
-	public void setLife(int nlife) {life = nlife;}
+	public void setLife(double nlife) {life = nlife;}
 	public void setColor(Color nC) {curCol = nC;}
 	
 	public void setAlpha(int n) {curCol = new Color(curCol.getRed(), curCol.getGreen(), curCol.getBlue(), n);}
@@ -51,7 +57,7 @@ public class Particle {
 	public double getRateY() {return rate_y; }
 	public double getDecayX() {return dec_x; }
 	public double getDecayY() {return dec_y; }
-	public int getLife() {return life;}
+	public double getLife() {return life;}
 	public boolean getStatus() {return alive;}
 	public boolean getTrace() {return trace;}
 	public long getStartTime() {return startTick;}
@@ -69,6 +75,8 @@ public class Particle {
 	
 	public void move(long tick) {
 		if(alive) {
+			mouse_x = ControlManager.getMouseX();
+			mouse_y = ControlManager.getMouseY();
 			//Trace line origin is the previous X and Y.
 			trace_x = x;
 			trace_y = y;
@@ -87,18 +95,45 @@ public class Particle {
 			
 			//Make a random angle, then add its sin and cos to the particle.
 			Random rand = new Random();
-			if(ang<360) ang+=Math.round(rand.nextDouble()); else ang = 0;
+			//if(ang<360) 
+				ang+=1;// else ang = 0;
+				
+				ang2+= 2 * (rand.nextDouble() - 0.5);
 			
-			this.rate_x += Math.cos(ang) / 5;
-			this.rate_y += Math.sin(ang) / 5;
+			//Various thingies you can use to modify each particles random movement.
+
+			if(modifiers[0]) {
+				this.rate_x += (mouse_x - this.x) * 0.01;
+				this.rate_y += (mouse_y - this.y) * 0.01;
+			}
+			
+			if(modifiers[1]) {	
+				this.rate_x += Math.cos(ang) * 3 + Math.cos(ang2) * 2;
+				this.rate_y += Math.sin(ang) * 3 + Math.sin(ang2) * 2;
+			}
+				
+			if(modifiers[2]) {
+				this.rate_x += rand.nextDouble() * 2 - 1;
+				this.rate_y += rand.nextDouble() * 2 - 1;
+			}
+			
+			if(modifiers[3]) {
+				this.rate_y = -Math.abs(this.rate_y);
+			}
 		//	this.rate_y += 1;
+			
 			
 			//Just makes the particles fan out on top and float upwards.
 			if(grav){
-				this.y -= Math.abs(rate_y / 2);
-				if(this.y < trace_y) {this.y += rate_y;}
+				if(this.y - rate_y >= start_y) {
+					rate_y = 0;
+					this.y = start_y;
+					this.setLife(Math.max(0, this.getLife() + 12));
+				} else {
+					rate_y += 1;
+				}
 			}
-			this.setColor(new Color(this.getRed(), this.getGreen(), this.getBlue(), Math.max(this.getAlpha() - this.getLife(), 0)));
+			this.setColor(new Color(this.getRed(), this.getGreen(), this.getBlue(), (int)Math.max(this.getAlpha() - this.getLife(), 0)));
 			if(this.getAlpha() == 0) {this.kill();}
 			
 		//	System.out.println(tick - lastTick);

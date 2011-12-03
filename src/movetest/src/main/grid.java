@@ -2,14 +2,16 @@ package main;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferStrategy;
 
 public class grid extends JPanel implements KeyListener, MouseListener, Runnable {
 	private static final long serialVersionUID = 6306113229343973266L;
 	
+	private boolean first = true;
 	private ControlManager gameControl;
 	private GraphicsManager gameGraphics;
+	private BufferStrategy buffer;
 	private int w, h;
-	private PlayerEnt player = new PlayerEnt(5, 5, this);
 	private Image dbImage;
 	private Graphics dbg;
 	private long startTime = System.currentTimeMillis(), curTime;
@@ -46,29 +48,33 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		
 		//Call stop() to stoppit.
 		while(Thread.currentThread() == th) {
+			if(first) 
+				Player.init(5, 5);
 			try {
 				// Add the mouse position to the container element position! Yay.
 				mousePos = new Point((MouseInfo.getPointerInfo().getLocation().x - this.getLocationOnScreen().x), (MouseInfo.getPointerInfo().getLocation().y - this.getLocationOnScreen().y));
 			} catch(IllegalComponentStateException e) { /* This only exists cause it'll throw an error first time around. */	}
+			ControlManager.setMousePos(mousePos.x, mousePos.y);
 			
 			if(mousedown) 
-				gameGraphics.createSparks(mousePos.x, mousePos.y);
+				GraphicsManager.createParticleShower();
 			
 		//	System.out.println(curTime);
 			
 			//Tell each to set its amount to fps_lag to compensate for lag!
-			gameControl.clk(fps_lag);
-			gameGraphics.clk(fps_lag);
-			repaint();
+			ControlManager.clk(fps_lag);
+			GraphicsManager.clk(fps_lag);
+			refresh();
 			
 			try {
-				//Add delay to see how far we've got
-				curTime += delay;
 				//Compute our elapsed time from last frame
-				fps_lag = (int)(curTime - System.currentTimeMillis());
+				fps_lag = (int)(System.currentTimeMillis() - curTime);
+				//Add delay to see how far we've got
+				curTime = System.currentTimeMillis();
 				
 				//Sleep it for the time specified to keep 
-				Thread.sleep(Math.max(0, curTime - System.currentTimeMillis()));
+				if(first) first = false;
+				Thread.sleep(Math.max(0, 20));
 			}
 			catch(InterruptedException ex) {
 				System.out.println("I say! Someone seems to have interrupted me!");
@@ -94,14 +100,12 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	public grid(Color backColor, int width, int height) {
 		setBackground(backColor);
 		setPreferredSize(new Dimension(width, height));
-		gameControl = new ControlManager(this, player);
-		gameGraphics = new GraphicsManager(this, gameControl, player);
-		gameControl.setGraphics(gameGraphics);
+		GraphicsManager.init(this);
 		System.out.println("Player initialized");
 		w = width;
 		h = height;
 		
-		player.setBlockSize(width/20);
+		Player.setBlockSize(width/20);
 		
 		start();
 	//	timer = new javax.swing.Timer(40, new MoveListener());
@@ -112,15 +116,36 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	{
 	}
 	
-	
-	public void paint(Graphics g) {	//Called each time it's redrawn.  Send the gamegraphics a message to draw each component.
+	//OBSOLETE
+/*	public void paint(Graphics g) {
 		super.paintComponent(g);
-		gameGraphics.draw(g, player, this);
+		gameGraphics.draw(g, this);
 		frame++;
 		fps_frame++;
-		print(g, "fps: "+fps, 150, 100);
-	}
+		gameGraphics.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
+	} */
 	
+	//Alternative for paint(g)
+	public void refresh() {
+		Graphics2D g = null;
+		//Get the graphics of the buffer object for drawing on.
+		g = (Graphics2D)window.buffer.getDrawGraphics();
+		//Translate the buffer area to the panel area.
+		g.translate(this.getLocationOnScreen().x - window.getFrame().getLocationOnScreen().x, this.getLocationOnScreen().y - window.getFrame().getLocationOnScreen().y);
+		GraphicsManager.draw((Graphics2D)g, this);
+		GraphicsManager.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
+		GraphicsManager.print((Graphics2D)g, "particles: " + gameGraphics.getParticleCount(), 150.0, 115.0, true);
+		
+		//You don't need g anymore, it'd just gobble up memory
+		g.dispose();
+		
+		//Copy buffer to the window area.
+		window.buffer.show();
+		
+		//Increment frame counter.
+		frame++;
+		fps_frame++;
+	}
 	
 	
 	public void print(Graphics g, String text, int x, int y) {
