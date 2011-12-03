@@ -1,0 +1,47 @@
+package main;
+
+import java.awt.Point;
+
+public class Camera {
+	public static Point pos = new Point(window.getPanelWidth()/2, window.getPanelHeight()/2);
+	public static Point origin = pos;
+	public static Point newPos = new Point(0, 0);
+	public static boolean moving = false;
+	public static int time, smoothAmt, mul_x, mul_y;
+	
+	public static void setX(int nx) {pos.x = nx;}
+	public static void setY(int ny) {pos.y = ny;}
+	public static void setPoint(Point npos) {pos = npos;}
+	
+	public static int getX() {return pos.x;}
+	public static int getY() {return pos.y;}
+	public static Point getPoint() {return pos;}
+	public static String getString() {return "X: "+pos.x+" Y: "+pos.y;}
+	
+	public static void moveToPos(Point npos, int ntime, int nSmoothAmt) {
+		origin = pos;
+		newPos = npos;
+		if(newPos == pos) moving = false; else moving = true;
+		time = ntime;
+		smoothAmt = nSmoothAmt;
+		mul_x = pos.x < newPos.x ? 1 : -1;
+		mul_x *= (pos.x - newPos.x) / time;
+
+		mul_y = pos.y < newPos.y ? 1 : -1;
+		mul_y *= (pos.y - newPos.y) / time;
+	}
+	
+	public static void update() {
+		try {
+			if(newPos == pos | ((newPos.y - origin.y) / (newPos.x - origin.x)) <= ((pos.y - origin.y)/ (pos.x - origin.x))) {
+				moving = false; 
+				origin = pos;
+			}
+			else {
+				Camera.setX(Camera.getX() + mul_x);
+				Camera.setY(Camera.getY() + mul_x);
+				System.out.println(mul_x);
+			}
+		} catch(ArithmeticException e){}
+	}
+}

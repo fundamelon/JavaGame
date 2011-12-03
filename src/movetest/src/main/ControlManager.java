@@ -18,55 +18,60 @@ public class ControlManager {
 	static boolean[] keys = new boolean[525];
 	
 	private static GraphicsManager gameGraphics;
-//<<<<<<< HEAD
 	public static double distancepy;
 	public static double distanceny;
 	public static double distancepx;
 	public static double distancenx;
 	public static long tick, lastTick, tickdiff;
 	private static double mousePos_x, mousePos_y;
-//=======
 	private static int ticks;
 	public static int shake_time = 0;
-//>>>>>>> bfeca26aa279c21b663ea90d784efc36af66fb93
-	
-	
-	/*  What happened here? FIX IT >:(
-<<<<<<< HEAD
-	private double playerMoveAmt = 1.5;
-=======
-	private double playerMoveAmt = 20;
->>>>>>> 746b475b3700c7468a53c4a3185f17fc7585cd58
-	
-	*/
-	
-	//Player move amount and move timer varibabelz
-	//private double playerMoveAmt = 1.4;
-//	private javax.swing.Timer playerMoveClk; 
 	static double playerMoveAmt = 1.4;
 		
 	
+	/**
+	 * Set the player movement amount
+	 * @param move - new player movement amount
+	 */
 	public static void setplayerMovetAmt(int move){
 			playerMoveAmt = move;
 	}
 	
+	
+
+	/**
+	 * Manually set mouse position
+	 * @param nx - new pos x
+	 * @param ny - new pos y
+	 */
 	public static void setMousePos(double nx, double ny) {
 		mousePos_x = nx;
 		mousePos_y = ny;
 	}
+	
+	
+	/** @return Mouse x position */
 	public static double getMouseX() {
 		return mousePos_x;
 	}
+	
+	
+	/** @return Mouse y position */
 	public static double getMouseY() {
 		return mousePos_y;
 	}
 	
-	//Just an accessor in case we need it
+	
+	/**Just an accessor in case we need it*/
 	public static double getPlayerMoveAmt() {
 		return playerMoveAmt; 
 	}
 	
-	//Fire the move function when the timer is triggered.
+	
+	/**
+	 * Clock that fires the move method when the timer is triggered.
+	 * @param n - delay since last clock
+	 */
 	public static void clk(long n) {
 		lastTick = tick;
 		tick = n;
@@ -87,6 +92,9 @@ public class ControlManager {
 		}
 	}
 	
+	/**
+	 * Function fired regardless of keys pressed; keys are additively combined
+	 */
 	public static void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
 		//dx and dy are distance x and y respectively - these are sent to the player.
 		double dx=0, dy=0;
@@ -141,23 +149,34 @@ public class ControlManager {
 	
 	}
 	
+	
+	/**
+	 * Set Player's Z velocity upward to simulate a jump
+	 */
 	public static void jumpEntity() {
 		if(keys[" ".charAt(0)] && !Player.isJumping()) 
 			Player.setVelZ(9);
 	}
 	
+	
+	/**
+	 * Hack method for 0 and 9 for the fade function only
+	 */
 	public static void updateUtilKeys() {
 		if(keys["0".charAt(0)]) 
-			gameGraphics.setFade(false);
+			GraphicsManager.setFade(false);
 		
 		if(keys["9".charAt(0)])
-			gameGraphics.setFade(true);
+			GraphicsManager.setFade(true);
 	}
 	
 	
 	//Character array of keys pressed.
 	
-	//Called when grid gets a key down event.
+	/**
+	 * Called when grid gets a key down event.
+	 * @param kC - Char value of activated key
+	 */
 	public static void keyDown(int kC) {
 		anyKeysPressed = true;
 		updateUtilKeys();
@@ -176,6 +195,12 @@ public class ControlManager {
 			
 		}
 	}
+	
+	
+	/**
+	 * Called when grid gets a key up event.
+	 * @param kC - Char value of deactivated key
+	 */
 	public static void keyUp(int kC) {  
 		// kC is ASCII char code.
 		//Remove the key from the boolean array.
@@ -190,19 +215,19 @@ public class ControlManager {
 	}
 	
 	//Some backup methods - just in case we need them.
+	
+	/**
+	 * Get key status of selected key char value, 0-500.
+	 * @param kC - char value of key in question
+	 * @return boolean key status: true is down, false is up
+	 */
 	public static boolean getKeyStatus(int kC) {
 		return keys[kC];
 	}
 	
-	public static boolean getKeyStatus(char kC) {
-		return keys[kC];
-	}
+	
 	
 	public static void setKeyStatus(int kC, boolean newState) {
-		keys[kC] = newState;
-	}
-	
-	public static void setKeyStatus(char kC, boolean newState) {
 		keys[kC] = newState;
 	}
 	
@@ -211,8 +236,13 @@ public class ControlManager {
 	public static char getKeyE() {return KEY_MOVE_EAST;}
 	public static char getKeyW() {return KEY_MOVE_WEST;}
 	
-	//Function will return the number i clamped between high and low.  Used for now for boundary clamping
-	//TODO: Rewrite collision algorithm!  This is just a hack.
+	/**
+	 * Clamp a number i between high and low limits
+	 * @param i - number to clamp
+	 * @param high - upper limit
+	 * @param low - lower limit
+	 * @return clamped value
+	 */
 	public static double clamp(double i, int high, int low) {
 		return Math.max (high, Math.min (i, low));
 	}

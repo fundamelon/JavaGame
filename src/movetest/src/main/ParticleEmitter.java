@@ -18,10 +18,34 @@ public class ParticleEmitter {
 	
 	private boolean rand_size_x, rand_size_y, rand_dir_x, rand_dir_y, rand_ang, grav, trails;
 	
+	
+	/** Create a specified amount of particles at a position with default speeds, life, and colour.
+	 * @param x - emitter origin x
+	 * @param y - emitter origin y
+	 * @param amt - number of particles to create
+	 * @param startTick - time of creation
+	 * @param repeat - continuously respawn particles
+	 * @param gravity - gravity modifier
+	 */
 	public ParticleEmitter(int x, int y, int amt, int startTick, boolean repeat, boolean gravity) {
 		this(x, y, amt, 0.1, 0,1, 0.1, 100, repeat, gravity, Color.yellow);
 	}
 	
+	
+	/**
+	 * Create a specified amount of particles at a position with specified speeds, life, and color.
+	 * @param x - emitter origin x
+	 * @param y - emitter origin y
+	 * @param amt - number of particles to spawn
+	 * @param rx - particle rate x
+	 * @param ry - particle rate y
+	 * @param dcx - rate decay x
+	 * @param dcy - rate decay y
+	 * @param life - particle life in ms
+	 * @param repeat - continuously respawn particles
+	 * @param gravity - gravity modifier
+	 * @param newCol - particle color
+	 */
 	public ParticleEmitter(int x, int y, int amt, double rx, double ry, double dcx, double dcy, double life, boolean repeat, boolean gravity, Color newCol) {
 		ex = x;
 		ey = y;
@@ -36,26 +60,45 @@ public class ParticleEmitter {
 		initParticles(x, y, rx, ry, dcx, dcy, tick, life, gravity, newCol);
 	}
 	
+	
+	/**
+	 * Arrange particles and spawn them.
+	 * @param ox - emitter origin x
+	 * @param oy - emitter origin y
+	 * @param rx - rate x
+	 * @param ry - rate y
+	 * @param dcx - rate decay x
+	 * @param dcy - rate decay y
+	 * @param t - frame delay in ms
+	 * @param life - particle life in ms
+	 * @param gravity - gravity modifier
+	 * @param newCol - particle color
+	 */
 	public void initParticles(int ox, int oy, double rx, double ry, double dcx, double dcy, long t, double life, boolean gravity, Color newCol) {
 		for(int i = 0; i < particles.length; i++ ) {
-			createParticle(i, ox, oy, rx, ry, dcx, dcy, t, life, gravity, newCol);
+			int ang = rand.nextInt() * 360;
+			double dist = ((rand.nextDouble() / 2));
+			
+			//Random direction from origin of emitter.
+			particles[i] = new Particle(ox, oy, Math.cos(ang) * dist * rx, Math.sin(ang) * dist * ry, dcx, dcy, t, life, gravity, newCol);
 		}
 	}
 	
-	public void createParticle(int i, int ox, int oy, double rx, double ry, double dcx, double dcy, long t, double life, boolean gravity, Color newColor) {
-		int ang = rand.nextInt() * 360;
-		double dist = ((rand.nextDouble() / 2) + 0.25);
-		
-		//Random direction from origin of emitter.
-		rx = Math.cos(ang) * dist * rx;
-		ry = Math.sin(ang) * dist * ry;
-		particles[i] = new Particle(ox, oy, rx, ry, dcx, dcy, t, life, gravity, newColor);
-	}
 	
+	/**
+	 * Tells particle to update its position
+	 * @param i - particle index
+	 * @param t - frame delay
+	 */
 	public void updatePos(int i, long t) {
 		particles[i].move(t);
 	}
 	
+	
+	/**
+	 * Toggle particle movement modifier at local indes
+	 * @param n - local particle index
+	 */
 	public void toggleModifier(int n) {
 		for(int i = 0; i < particles.length; i++) {
 			if(particles[i] != null) {
@@ -64,6 +107,7 @@ public class ParticleEmitter {
 		}
 	}
 	
+	/** OBSOLETE */
 	public void setTrails(boolean n) {
 		trails = n;
 	}
@@ -71,7 +115,13 @@ public class ParticleEmitter {
 	public int getX() {return ex;}
 	public int getY() {return ey;}
 
-	public void draw(Graphics2D g2, long tick) {
+	
+	/**
+	 * Draw currently active particles.
+	 * @param g2 - Graphics2D to draw with
+	 * @param delay - frame delay
+	 */
+	public void draw(Graphics2D g2, long delay) {
 		
 		Color oldColor;
 		
@@ -87,7 +137,7 @@ public class ParticleEmitter {
 				g2.setColor(new Color(particles[i].getRed(), particles[i].getGreen(), particles[i].getBlue(), particles[i].getAlpha()));
 				
 				//Update particle position
-				updatePos(i, tick);
+				updatePos(i, delay);
 				
 				//Draw a trace line
 				if(trails)
@@ -105,11 +155,21 @@ public class ParticleEmitter {
 		}
 	}
 	
+	
+	/**
+	 * Set all particles' sizes
+	 * @param nSize - size in pixels
+	 */
 	public void setParticleSize(int nSize) {
 		particle_size = nSize;
 	}
 	
-	//Total up the particles this emitter has.
+	
+	
+	/**
+	 * Count the particles of this emitter
+	 * @return Total active particles belonging to this emitter
+	 */
 	public int getParticleCount() {
 		int c = 0;
 		for(int i = 0; i < particles.length; i++) {

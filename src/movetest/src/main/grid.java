@@ -22,11 +22,17 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	private int frame = 0, fps_frame = 0, fps = 20, fps_goal = 45, delay = 1000 / fps_goal, fps_lag = 0;
 	private long frameTime;
 	
+	/**OBSOLETE*/
 	public void init() {
 		//Compute millis needed for the fps.
 		delay = (fps_goal > 0) ? (1000  / fps_goal) : 100;
 		System.out.print(delay);
 	}
+	
+	
+	/**
+	 * Assign program to a thread and start it.
+	 */
 	public void start() {
 		//Get this process thread and assign it to th
 		th = new Thread(this);
@@ -34,6 +40,7 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	}
 	
 	
+	/** Set this thread to null */
 	public void stop() {
 		th = null;
 	}
@@ -41,29 +48,34 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	//TODO : Override
 	public void destroy() {}
 	
-	//run() is called every time the thread executes.
+	/**
+	 * Main process thread's instructions
+	 */
 	public void run() {
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		curTime = System.currentTimeMillis();
 		
-		//Call stop() to stoppit.
+		//Call stop() to disable execution.
 		while(Thread.currentThread() == th) {
 			if(first) 
 				Player.init(5, 5);
+			
 			try {
 				// Add the mouse position to the container element position! Yay.
 				mousePos = new Point((MouseInfo.getPointerInfo().getLocation().x - this.getLocationOnScreen().x), (MouseInfo.getPointerInfo().getLocation().y - this.getLocationOnScreen().y));
-			} catch(IllegalComponentStateException e) { /* This only exists cause it'll throw an error first time around. */	}
-			ControlManager.setMousePos(mousePos.x, mousePos.y);
+				ControlManager.setMousePos(mousePos.x, mousePos.y);
+			} catch(IllegalComponentStateException e) { /* Sometimes it dorps so this is necessary */	}
+			
 			
 			if(mousedown) 
 				GraphicsManager.createParticleShower();
 			
-		//	System.out.println(curTime);
 			
-			//Tell each to set its amount to fps_lag to compensate for lag!
+			//Tell each manager to set its amount to fps_lag to compensate for frame delay!
 			ControlManager.clk(fps_lag);
 			GraphicsManager.clk(fps_lag);
+			
+			//Refresh graphics
 			refresh();
 			
 			try {
@@ -90,13 +102,18 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 				fps_frame = 0;
 			}
 			
-			//Max priority for slower comps
+			//Max priority helps somewhat
 			Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		}
 	}
 	
 	
-	
+	/**
+	 * Initialize this grid
+	 * @param backColor - Color of background
+	 * @param width - in pixels
+	 * @param height - in pixels
+	 */
 	public grid(Color backColor, int width, int height) {
 		setBackground(backColor);
 		setPreferredSize(new Dimension(width, height));
@@ -112,11 +129,14 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 	//	timer.start();
 	}
 	
+	
+	/**OBSOLETE*/
 	public void update(Graphics g) //Called when repaint() is called, this runs before paintComponent().
 	{
 	}
 	
-	//OBSOLETE
+	
+	/**OBSOLETE*/
 /*	public void paint(Graphics g) {
 		super.paintComponent(g);
 		gameGraphics.draw(g, this);
@@ -125,7 +145,10 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		gameGraphics.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
 	} */
 	
-	//Alternative for paint(g)
+	
+	/**
+	 * Refreshes graphics through GraphicsManager and writes to a buffer, then copies buffer to window
+	 */
 	public void refresh() {
 		Graphics2D g = null;
 		//Get the graphics of the buffer object for drawing on.
@@ -147,28 +170,34 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		fps_frame++;
 	}
 	
-	
+	/**OBSOLETE*/
 	public void print(Graphics g, String text, int x, int y) {
 		g.drawString(text, x, y);
 	}
 
+	/** Called when a key was just pressed */
 	public void keyPressed(KeyEvent e) {
 		gameControl.keyDown(e.getKeyCode());
 	}
 	
+	
+	/** Called when a key was just released */
 	public void keyReleased(KeyEvent e) {
 		gameControl.keyUp(e.getKeyCode());
 		
 	}
 	
+	
+	/** Called when a key is pressed then released */
 	public void keyTyped(KeyEvent e) {}
 	
 	
-	@Override
+	/** Called when the mouse was pressed then released */
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
+	
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
 		// TODO Auto-generated method stub
@@ -180,11 +209,13 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		
 	}
 
+	/** Called when the mouse was just pressed */
 	public void mousePressed(MouseEvent e) {
 		mousedown = true;
 		
 	}
 
+	/** Called when the mouse was just released */
 	public void mouseReleased(MouseEvent arg0) {
 		mousedown = false;
 	}

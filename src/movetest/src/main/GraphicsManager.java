@@ -32,6 +32,10 @@ public class GraphicsManager {
 	//Vars with preceding underscore are to be values for render options.  :O
 	private static boolean _dither = false, fadeMode = true, helperText = false, shake = false;
 	
+	/**
+	 * Initializes the object and loads images.
+	 * @param transPanel - the instance of grid to be used
+	 */
 	public static void init(grid transPanel) {
 		panel = transPanel;
 		
@@ -53,6 +57,11 @@ public class GraphicsManager {
 		}
 	}
 	
+	/**
+	 * Main function that redraws all graphics on a grid.
+	 * @param g - the graphics object
+	 * @param panel - the grid to draw on
+	 */
 	public static void draw(Graphics g, grid panel) {
 		Graphics2D g2 = (Graphics2D) g;
 		Color oldCol;
@@ -118,7 +127,9 @@ public class GraphicsManager {
 		}
 	}
 	
-	//Create a burst of sparks at this location!
+	/**
+	 * Create a burst of particles at this location!
+	 */
 	public static void createParticleShower() {
 		int x = (int)ControlManager.getMouseX();
 		int y = (int)ControlManager.getMouseY();
@@ -128,7 +139,7 @@ public class GraphicsManager {
 		else
 			sparkct++;
 		emitters[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 200, 20, 40, 0.8, 0.8, 1, false, true, Color.blue);
-		emitters[sparkct].setParticleSize(4);
+		emitters[sparkct].setParticleSize(3);
 		emitters[sparkct].setTrails(false);
 		emitters[sparkct].toggleModifier(2);
 		emitters[sparkct].toggleModifier(3);
@@ -140,17 +151,24 @@ public class GraphicsManager {
 	
 	}
 	
-	//Update the fps lag.
+	/**
+	 * Update the fps lag.
+	 * @param n the fps delay
+	 */
 	public static void clk(int n) {
 		fps_lag = n;
 	}
-	
 	//unused
-	public static void drawPlayer(Graphics g) {
-		
-	}
+	/**
+	 * Unused
+	 * @param g - graphics
+	 */
+	public static void drawPlayer(Graphics g) {}
 	
-	//Draw the tile textures used on the background.
+	/**
+	 * Draw the tile textures used on the background.
+	 * @param g2 - Graphics2D to draw with
+	 */
 	public static void drawBackground(Graphics2D g2) {		
 		//Read and load all the tile files into the array.
 		//Set a random seed so random is the same every time it renders.
@@ -240,7 +258,14 @@ public class GraphicsManager {
 		
 	}
 	
-	//Display strings.
+	/**
+	 * Simple method to display strings.
+	 * @param g2 - Graphics object to draw with
+	 * @param text - String in question
+	 * @param x - Pos in pixels
+	 * @param y - Pos in pizels
+	 * @param local - True means it's local to the camera, false means it's static on the map surface.
+	 */
 	public static void print(Graphics2D g2, String text, double x, double y, boolean local) {
 		if(local) 
 			g2.drawString(text, (int)toLocalX(x), (int)toLocalY(y));
@@ -248,7 +273,10 @@ public class GraphicsManager {
 			g2.drawString(text, (int)x, (int)y);
 	}
 	
-	//Just update every spark if it's not yet dead.
+	/**
+	 * Update particles; if particles are in front throw them on different list
+	 * @param g2 - Graphics2D to draw with
+	 */
 	public static void drawEffects(Graphics2D g2) {
 		for(int i = 0; i < emitters.length; i++) {
 			if(emitters[i] != null) 
@@ -259,6 +287,10 @@ public class GraphicsManager {
 		}
 	}
 	
+	/**
+	 * Update particles on the second render list; rendered after player
+	 * @param g2 - Graphics2D to draw with
+	 */
 	public static void drawFrontEffects(Graphics2D g2) {
 		for(int i = 0; i < emitter_dump.length; i++) {
 			if(emitter_dump[i] != null) 
@@ -267,7 +299,11 @@ public class GraphicsManager {
 		}
 	}
 	
-	public static void drawGrid(Graphics g) {		//Simple grid drawing algorithm.
+	/**
+	 * Simple grid drawing algorithm
+	 * @param g - Graphics to draw with
+	 */
+	public static void drawGrid(Graphics g) {
 		
 		int k=0;
 		Color oldColor = g.getColor();
@@ -283,12 +319,17 @@ public class GraphicsManager {
 		g.setColor(oldColor);
 	}
 	
-	//Mutator to update boolean fade variable.
+	/**
+	 * Mutator to update boolean fade variable.
+	 * @param mode - true/false to toggle if its fading in or out respectively
+	 */
 	public static void setFade(boolean mode) {
 		fadeMode = mode;
 	}
 	
-	//Update overlay alpha based on time and boolean fade variable.
+	/**
+	 * Update overlay alpha based on time and boolean fade variable.
+	 */
 	public static void fade() {
 		if(fadeMode) {
 			if(overlayCol.getAlpha() - fps_lag/10 > 0)
@@ -305,7 +346,10 @@ public class GraphicsManager {
 		}
 	}
 	
-	//Ask each emitter to total its particles, then total that to get number of all particles.
+	/**
+	 * Ask each emitter to total its particles, then total that to get number of all particles.
+	 * @return Total particle count
+	 */
 	public static int getParticleCount() {
 		particle_count = 0;
 		for(int i = 0; i < emitters.length; i++) {
@@ -315,20 +359,41 @@ public class GraphicsManager {
 		return particle_count;
 	}
 	
+	/**
+	 * Updated every tick to show helper text (will reset after each tick)
+	 * @param mode - true/false to show/hide helper text respectively
+	 */
 	public static void showHelperText(boolean mode) {
 		helperText = mode;
 	}
 	
-	//Make shake true just for this one execution (it's set to false every execution)
+	
+	
+	/**
+	 * Set camera shaking to true (is reset to false after each tick)
+	 */
 	public static void shake() {
 		shake = true;
 	}
 	
+	
+	
 	//Important functions: they add the camera's x and y to the given GLOBAL coordinates
 	//resulting in LOCAL coordinates relative to the screen itself.
+	
+	/**
+	 * Translate a global x value to a local x value
+	 * @param ox - original x value
+	 * @return localized x value
+	 */
 	public static double toLocalX(double ox) {
 		return ox + Camera.getAnchorX();
 	}
+	/**
+	 * Translate a global y value to a local y value
+	 * @param oy - original y value
+	 * @return localized y value
+	 */
 	public static double toLocalY(double oy) {
 		return oy + Camera.getAnchorY();
 	}

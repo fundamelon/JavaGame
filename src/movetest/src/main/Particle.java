@@ -13,7 +13,38 @@ public class Particle {
 	private Color curCol;
 	private boolean[] modifiers = new boolean[10];
 	
+	
+	/**
+	 * Create a particle at the given coordinates, speed, and other attributes.
+	 * @param x - start pos x
+	 * @param y - start pos y
+	 * @param rx - rate x
+	 * @param ry - rate y
+	 * @param dcx - rate decay x
+	 * @param dcy - rate decay y
+	 * @param st - start tick
+	 * @param life - lifetime in ms
+	 * @param gravity - toggle gravity effect
+	 */
 	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, double life, boolean gravity) {
+		this(x, y, rx, ry, dcx, dcy, st, life, gravity, Color.black);
+	}
+	
+	
+	/**
+	 * Create a particle at the given coordinates, speeds, life, and color.
+	 * @param x
+	 * @param y
+	 * @param rx
+	 * @param ry
+	 * @param dcx
+	 * @param dcy
+	 * @param st
+	 * @param life
+	 * @param gravity
+	 * @param newColor
+	 */
+	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, double life, boolean gravity, Color newColor) {
 		this.x = x;
 		this.y = y;
 		this.rate_x = rx;
@@ -24,21 +55,23 @@ public class Particle {
 		this.lastTick = st;
 		this.life = life;
 		this.grav = gravity;
-		this.curCol = Color.black;
 		this.alive = true;
-	}
-	
-	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, double life, boolean gravity, Color newColor) {
-		this(x, y, rx, ry, dcx, dcy, st, life, gravity);
-		this.curCol = newColor;
-		this.setAlpha(100);
 		this.start_x = x;
 		this.start_y = y;
+		this.setColor(newColor);
+		this.setAlpha(100);
 	}
 	
+	
+	
+	/**
+	 * Toggle the particle movement modifier on/off.
+	 * @param n - index of modifier
+	 */
 	public void toggleModifier(int n) {
 		modifiers[n] = !modifiers[n];
 	}
+	
 	
 	public void setX(double nx) {x = nx;}
 	public void setY(double ny) {y = ny;}
@@ -73,7 +106,12 @@ public class Particle {
 	public void kill() {alive = false;}
 	
 	
-	public void move(long tick) {
+	
+	/**
+	 * Move the particle according to its movement rules.
+	 * @param delay - frame delay
+	 */
+	public void move(long delay) {
 		if(alive) {
 			mouse_x = ControlManager.getMouseX();
 			mouse_y = ControlManager.getMouseY();
@@ -102,6 +140,7 @@ public class Particle {
 			
 			//Various thingies you can use to modify each particles random movement.
 
+			/*
 			if(modifiers[0]) {
 				this.rate_x += (mouse_x - this.x) * 0.01;
 				this.rate_y += (mouse_y - this.y) * 0.01;
@@ -120,8 +159,7 @@ public class Particle {
 			if(modifiers[3]) {
 				this.rate_y = -Math.abs(this.rate_y);
 			}
-		//	this.rate_y += 1;
-			
+			*/
 			
 			//Just makes the particles fan out on top and float upwards.
 			if(grav){

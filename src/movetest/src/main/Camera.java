@@ -25,6 +25,13 @@ public class Camera {
 	public static int getAnchorY() {return (int)(pos_y - window.getPanelHeight()/2);}
 	public static Point getPoint() {return pos;}
 	public static String getString() {return "X: "+pos_x+" Y: "+pos_y;}
+	
+	/**
+	 * Move the camera to certain position over specified interval
+	 * @param x - new pos x
+	 * @param y - new pos y
+	 * @param ntime - movement interval
+	 */
 	public static void moveToPos(double x, double y, int ntime) {
 		moving = true;
 		origin = pos;
@@ -42,10 +49,19 @@ public class Camera {
 		
 	}
 	
+	/**
+	 * Move the camera to certain position over specified interval
+	 * @param npos - new Point
+	 * @param ntime - movement interval
+	 */
 	public static void moveToPos(Point npos, int ntime) {
 		moveToPos(npos.x, npos.y, ntime);
 	}
 	
+	
+	/**
+	 * Move the camera if it's not at the desired coordinates yet
+	 */
 	public static void update() {
 		if(true) {
 			try {
