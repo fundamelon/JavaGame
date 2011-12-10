@@ -3,7 +3,9 @@ package main;
 public class GameLogic {
 	public static boolean
 		playerDead,
-		gameWon
+		gameWon,
+		inMainMenu = true,
+		inGameView = false
 	;
 	public static void reportPlayerDeath() {
 	}
@@ -13,6 +15,26 @@ public class GameLogic {
 	static boolean hit;
 	static int s;
 	static int hitdamage;
+	
+	public static void openMainMenu() {
+		inMainMenu = true;
+		inGameView = false;
+	}
+	
+	public static void closeMainMenu() {
+		inMainMenu = false;
+		inGameView = true;
+	}
+	
+	public static boolean inMainMenu() {
+		return inMainMenu;
+	}
+	
+	public static boolean inGameView() {
+		return inGameView;
+	}
+	
+	
 	
 	public static void hit(boolean hit){
 		if(hit){

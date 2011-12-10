@@ -16,6 +16,7 @@ public class ControlManager {
 	private static double smoothTickX = 0, smoothTickY = 0;
 	private static boolean anyKeysPressed = false;
 	static boolean[] keys = new boolean[525];
+	static boolean[] keyPressed =  new boolean[keys.length];
 	
 	private static GraphicsManager gameGraphics;
 	public static double distancepy;
@@ -90,6 +91,7 @@ public class ControlManager {
 			GraphicsManager.shake();
 			shake_time -= 1;
 		}
+		
 	}
 	
 	/**
@@ -177,21 +179,18 @@ public class ControlManager {
 	 * Called when grid gets a key down event.
 	 * @param kC - Char value of activated key
 	 */
-	public static void keyDown(int kC) {
+	public static void keyDown(KeyEvent e) {
 		anyKeysPressed = true;
+		int kC = e.getKeyCode();
 		updateUtilKeys();
 		
 		if(!keys[kC]) {						//Check if they key hasn't been already registered - prevents glitches.
-		
-			//	DEBUG: System.out.println("Keydown event. "+(char)kC+" is now active.");
-			
+			System.out.println(kC);
 			keys[kC] = true;				//Add the key to a boolean array.
-	//		if(playerMoveClk == null) {		//Initialize a timer if there isn't one.
-	//			playerMoveClk = new javax.swing.Timer(10, new playerMove());
-	//			playerMoveClk.start();
-	//		}
-	//		else if(!playerMoveClk.isRunning())
-	//			playerMoveClk.restart();	//If there is, restart it.
+			if(kC == 27) {
+				if(GameLogic.inMainMenu()) GameLogic.closeMainMenu(); else GameLogic.openMainMenu();
+				GraphicsManager.first_run = true;
+			}
 			
 		}
 	}
@@ -201,9 +200,10 @@ public class ControlManager {
 	 * Called when grid gets a key up event.
 	 * @param kC - Char value of deactivated key
 	 */
-	public static void keyUp(int kC) {  
+	public static void keyUp(KeyEvent e) {  
 		// kC is ASCII char code.
 		//Remove the key from the boolean array.
+		int kC = e.getKeyCode();
 		keys[kC] = false;		
 		anyKeysPressed=false;
 		for(int i=0; i<keys.length; i++) {

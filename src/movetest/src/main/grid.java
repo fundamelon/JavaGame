@@ -155,9 +155,13 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 		g = (Graphics2D)window.buffer.getDrawGraphics();
 		//Translate the buffer area to the panel area.
 		g.translate(this.getLocationOnScreen().x - window.getFrame().getLocationOnScreen().x, this.getLocationOnScreen().y - window.getFrame().getLocationOnScreen().y);
-		GraphicsManager.draw((Graphics2D)g, this);
-		GraphicsManager.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
-		GraphicsManager.print((Graphics2D)g, "particles: " + gameGraphics.getParticleCount(), 150.0, 115.0, true);
+		if(GameLogic.inMainMenu()) {
+			GraphicsManager.drawMainMenu((Graphics2D)g);
+		} else {
+			GraphicsManager.drawGameView((Graphics2D)g, this);
+			GraphicsManager.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
+			GraphicsManager.print((Graphics2D)g, "particles: " + gameGraphics.getParticleCount(), 150.0, 115.0, true);
+		}
 		
 		//You don't need g anymore, it'd just gobble up memory
 		g.dispose();
@@ -177,13 +181,13 @@ public class grid extends JPanel implements KeyListener, MouseListener, Runnable
 
 	/** Called when a key was just pressed */
 	public void keyPressed(KeyEvent e) {
-		gameControl.keyDown(e.getKeyCode());
+		gameControl.keyDown(e);
 	}
 	
 	
 	/** Called when a key was just released */
 	public void keyReleased(KeyEvent e) {
-		gameControl.keyUp(e.getKeyCode());
+		gameControl.keyUp(e);
 		
 	}
 	

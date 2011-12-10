@@ -16,21 +16,29 @@ public class window {
 		theGUI.setVisible(true);
 		theGUI.createBufferStrategy(2); //Double buffering initialized.
 		buffer = theGUI.getBufferStrategy(); //Get this frame's buffer object.
-		panel = new grid(Color.white, 640, 480);
-		theGUI.addKeyListener(panel);
-		theGUI.addMouseListener(panel);
-		Container pane = theGUI.getContentPane();
-		pane.add(panel);
-		theGUI.setIgnoreRepaint(true);
-
-		theGUI.setResizable(true);
-		theGUI.pack();	//Important function to keep interior dimensions even with the saiz of window.
-		
+		try {
+			panel = new grid(Color.white, 640, 480);
+			theGUI.addKeyListener(panel);
+			theGUI.addMouseListener(panel);
+			Container pane = theGUI.getContentPane();
+			pane.add(panel);
+			theGUI.setIgnoreRepaint(true);
+	
+			theGUI.setResizable(true);
+			theGUI.pack();	//Important function to keep interior dimensions even with the saiz of window.
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+			
 	//	theGUI.createBufferStrategy(2);
 	}
 	
 	public static JFrame getFrame() {
 		return theGUI;
+	}
+	
+	public static grid getPanel() {
+		return panel;
 	}
 	
 	public static int getPanelWidth() {
