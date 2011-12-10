@@ -1,7 +1,6 @@
 package main;
 import java.util.*;
 import java.io.*;
-import java.io.*;
 /*public class Map {
 	
 static String path = "path to file";	
@@ -127,9 +126,9 @@ public static String mapFile = "lib/demora.txt";
 		System.out.println(map.toCharArray);
 	}
 
-*/
 
-}
+
+}*/
 
 
 
