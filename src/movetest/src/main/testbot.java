@@ -1,5 +1,5 @@
 package main;
-public class testbot {
+public class Testbot {
 //  Just to stop errors temporarily. Sry
 //	System.out.print(distancepy);
 

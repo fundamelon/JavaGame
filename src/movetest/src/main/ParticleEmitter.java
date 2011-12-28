@@ -13,7 +13,7 @@ public class ParticleEmitter {
 	private boolean loop;
 	private int ex, ey, life, size_x, size_y, trace_x, trace_y, number;
 	private long tick;
-	private double rate_x = 0, rate_y = 0, decay_x, decay_y, ang;
+	private float rate_x = 0, rate_y = 0, decay_x, decay_y, ang;
 	private int particle_size = 1;
 	
 	private boolean rand_size_x, rand_size_y, rand_dir_x, rand_dir_y, rand_ang, grav, trails;
@@ -28,7 +28,7 @@ public class ParticleEmitter {
 	 * @param gravity - gravity modifier
 	 */
 	public ParticleEmitter(int x, int y, int amt, int startTick, boolean repeat, boolean gravity) {
-		this(x, y, amt, 0.1, 0,1, 0.1, 100, repeat, gravity, Color.yellow);
+		this(x, y, amt, 0.1f, 0,1f, 0.1f, 100, repeat, gravity, Color.yellow);
 	}
 	
 	
@@ -46,7 +46,7 @@ public class ParticleEmitter {
 	 * @param gravity - gravity modifier
 	 * @param newCol - particle color
 	 */
-	public ParticleEmitter(int x, int y, int amt, double rx, double ry, double dcx, double dcy, double life, boolean repeat, boolean gravity, Color newCol) {
+	public ParticleEmitter(int x, int y, int amt, float rx, float ry, float dcx, float dcy, float life, boolean repeat, boolean gravity, Color newCol) {
 		ex = x;
 		ey = y;
 		rate_x = rx;
@@ -74,13 +74,13 @@ public class ParticleEmitter {
 	 * @param gravity - gravity modifier
 	 * @param newCol - particle color
 	 */
-	public void initParticles(int ox, int oy, double rx, double ry, double dcx, double dcy, long t, double life, boolean gravity, Color newCol) {
+	public void initParticles(int ox, int oy, float rx, float ry, float dcx, float dcy, long t, float life, boolean gravity, Color newCol) {
 		for(int i = 0; i < particles.length; i++ ) {
 			int ang = rand.nextInt() * 360;
-			double dist = ((rand.nextDouble() / 2));
+			float dist = (float)((rand.nextDouble() / 2));
 			
 			//Random direction from origin of emitter.
-			particles[i] = new Particle(ox, oy, Math.cos(ang) * dist * rx, Math.sin(ang) * dist * ry, dcx, dcy, t, life, gravity, newCol);
+			particles[i] = new Particle(ox, oy, (float)Math.cos(ang) * dist * rx, (float)Math.sin(ang) * dist * ry, dcx, dcy, t, life, gravity, newCol);
 		}
 	}
 	

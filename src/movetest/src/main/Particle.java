@@ -6,8 +6,8 @@ import java.util.Random;
 public class Particle {
 	
 	//Placeholder that only knows its own values and can change them according to a model.
-	private double x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y, life, mouse_x, mouse_y, start_x, start_y;
-	private double ang = 0, ang2=180;
+	private float x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y, life, mouse_x, mouse_y, start_x, start_y, alpha;
+	private float ang = 0, ang2=180;
 	private long startTick, lastTick;
 	private boolean alive, trace, grav;
 	private Color curCol;
@@ -26,7 +26,7 @@ public class Particle {
 	 * @param life - lifetime in ms
 	 * @param gravity - toggle gravity effect
 	 */
-	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, double life, boolean gravity) {
+	public Particle(float x, float y, float rx, float ry, float dcx, float dcy, long st, float life, boolean gravity) {
 		this(x, y, rx, ry, dcx, dcy, st, life, gravity, Color.black);
 	}
 	
@@ -44,7 +44,7 @@ public class Particle {
 	 * @param gravity
 	 * @param newColor
 	 */
-	public Particle(double x, double y, double rx, double ry, double dcx, double dcy, long st, double life, boolean gravity, Color newColor) {
+	public Particle(float x, float y, float rx, float ry, float dcx, float dcy, long st, float life, boolean gravity, Color newColor) {
 		this.x = x;
 		this.y = y;
 		this.rate_x = rx;
@@ -73,24 +73,27 @@ public class Particle {
 	}
 	
 	
-	public void setX(double nx) {x = nx;}
-	public void setY(double ny) {y = ny;}
-	public void setRateX(double nrate_x) {rate_x = nrate_x;}
-	public void setRateY(double nrate_y) {rate_y = nrate_y;}
-	public void setDecX(double ndec_x) {dec_x = ndec_x;}
-	public void setDecY(double ndec_y) {dec_y = ndec_y;}
-	public void setLife(double nlife) {life = nlife;}
+	public void setX(float nx) {x = nx;}
+	public void setY(float ny) {y = ny;}
+	public void setRateX(float nrate_x) {rate_x = nrate_x;}
+	public void setRateY(float nrate_y) {rate_y = nrate_y;}
+	public void setDecX(float ndec_x) {dec_x = ndec_x;}
+	public void setDecY(float ndec_y) {dec_y = ndec_y;}
+	public void setLife(float nlife) {life = nlife;}
 	public void setColor(Color nC) {curCol = nC;}
 	
-	public void setAlpha(int n) {curCol = new Color(curCol.getRed(), curCol.getGreen(), curCol.getBlue(), n);}
+	public void setAlpha(int n) {
+		curCol = new Color(curCol.getRed(), curCol.getGreen(), curCol.getBlue(), n);
+		alpha = n;
+	}
 	
-	public double getX() { return x; }
-	public double getY() { return y; }
-	public double getRateX() {return rate_x; }
-	public double getRateY() {return rate_y; }
-	public double getDecayX() {return dec_x; }
-	public double getDecayY() {return dec_y; }
-	public double getLife() {return life;}
+	public float getX() { return x; }
+	public float getY() { return y; }
+	public float getRateX() {return rate_x; }
+	public float getRateY() {return rate_y; }
+	public float getDecayX() {return dec_x; }
+	public float getDecayY() {return dec_y; }
+	public float getLife() {return life;}
 	public boolean getStatus() {return alive;}
 	public boolean getTrace() {return trace;}
 	public long getStartTime() {return startTick;}
@@ -100,8 +103,8 @@ public class Particle {
 	public int getGreen() {return curCol.getGreen();}
 	public int getAlpha() {return curCol.getAlpha();}
 	
-	public double getTraceX() { return trace_x;}
-	public double getTraceY() {return trace_y;}
+	public float getTraceX() { return trace_x;}
+	public float getTraceY() {return trace_y;}
 	
 	public void kill() {alive = false;}
 	
@@ -113,23 +116,21 @@ public class Particle {
 	 */
 	public void move(long delay) {
 		if(alive) {
+			float dx = 0, dy = 0, nrx = this.rate_x, nry = this.rate_y;
 			mouse_x = ControlManager.getMouseX();
 			mouse_y = ControlManager.getMouseY();
 			//Trace line origin is the previous X and Y.
 			trace_x = x;
 			trace_y = y;
 			
-			//Move the particles.
-			this.x += rate_x;
-			this.y += rate_y;
 			
 			//Decrease the rates via the decay variables.
-			if(Math.abs(rate_x) > 0.1) 
-				rate_x *= dec_x;
-			else if(!grav) rate_x = 0;
-			if(Math.abs(rate_y) > 0.1)
-				rate_y *= dec_y;
-			else if(!grav) rate_y = 0;
+			if(Math.abs(nrx) > 0.1) 
+				nrx -= dec_x * Math.signum(nrx);
+			else if(!grav) nrx = 0;
+			if(Math.abs(nry) > 0.1)
+				nry -= dec_y * Math.signum(nrx);
+			else if(!grav) nry = 0;
 			
 			//Make a random angle, then add its sin and cos to the particle.
 			Random rand = new Random();
@@ -139,42 +140,44 @@ public class Particle {
 				ang2+= 2 * (rand.nextDouble() - 0.5);
 			
 			//Various thingies you can use to modify each particles random movement.
-
-			/*
 			if(modifiers[0]) {
-				this.rate_x += (mouse_x - this.x) * 0.01;
-				this.rate_y += (mouse_y - this.y) * 0.01;
+				nrx-= (this.x - mouse_x) * 0.02 * -rate_x;
+				nry-= (this.y - mouse_y) * 0.02 * -rate_y;
 			}
 			
 			if(modifiers[1]) {	
-				this.rate_x += Math.cos(ang) * 3 + Math.cos(ang2) * 2;
-				this.rate_y += Math.sin(ang) * 3 + Math.sin(ang2) * 2;
+				nrx += Math.cos(ang) * 3 + Math.cos(ang2);
+				nry += Math.sin(ang) * 3 + Math.sin(ang2);
 			}
 				
 			if(modifiers[2]) {
-				this.rate_x += rand.nextDouble() * 2 - 1;
-				this.rate_y += rand.nextDouble() * 2 - 1;
+				nrx += rand.nextDouble() * 2 - 1;
+				nry += rand.nextDouble() * 2 - 1;
 			}
 			
 			if(modifiers[3]) {
-				this.rate_y = -Math.abs(this.rate_y);
+				nry = -Math.abs(this.rate_y);
 			}
-			*/
 			
 			//Just makes the particles fan out on top and float upwards.
 			if(grav){
-				if(this.y - rate_y >= start_y) {
-					rate_y = 0;
-					this.y = start_y;
+				if(this.y - nry >= start_y) {
+					nry = 0;
+					dy = start_y;
 					this.setLife(Math.max(0, this.getLife() + 12));
 				} else {
-					rate_y += 1;
+					nry += 1;
 				}
 			}
-			this.setColor(new Color(this.getRed(), this.getGreen(), this.getBlue(), (int)Math.max(this.getAlpha() - this.getLife(), 0)));
+			alpha -= this.getLife() * ControlManager.getLagComp();
+			this.setColor(new Color(this.getRed(), this.getGreen(), this.getBlue(), (int)Math.max(alpha, 0)));
 			if(this.getAlpha() == 0) {this.kill();}
 			
-		//	System.out.println(tick - lastTick);
+			this.rate_x -= nrx * ControlManager.getLagComp();
+			this.rate_y -= grav ? Math.abs(nry) : nry * ControlManager.getLagComp();
+			
+			this.x += (this.rate_x + dx) * ControlManager.getLagComp();
+			this.y += (this.rate_y + dy) * ControlManager.getLagComp();
 
 			
 		} else {

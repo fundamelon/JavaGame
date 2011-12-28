@@ -4,25 +4,25 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 
 public class Camera {
-	public static Point pos = new Point(window.getPanelWidth()/2, window.getPanelHeight()/2);
-	public static double pos_x = pos.x, pos_y = pos.y;
+	public static Point pos = new Point(Window.getPanelWidth()/2, Window.getPanelHeight()/2);
+	public static float pos_x = pos.x, pos_y = pos.y;
 	public static Point origin = pos;
-	public static double origin_x = pos.x, origin_y = pos.y;
+	public static float origin_x = pos.x, origin_y = pos.y;
 	public static Point newPos = new Point(0, 0);
 	public static boolean moving = false;
 	public static int time, tick;
-	public static double mul_x, mul_y;
-	public static double moveDist, curDist;
+	public static float mul_x, mul_y;
+	public static float moveDist, curDist;
 	public static boolean lockToPlayer = true;
 	
-	public static void setX(double nx) {pos_x = nx;}
-	public static void setY(double ny) {pos_y = ny;}
+	public static void setX(float nx) {pos_x = nx;}
+	public static void setY(float ny) {pos_y = ny;}
 	public static void setPoint(Point npos) {pos_x = npos.x; pos_y = npos.y;}
 	
-	public static double getX() {return pos_x;}
-	public static double getY() {return pos_y;}
-	public static int getAnchorX() {return (int)(pos_x - window.getPanelWidth()/2);}
-	public static int getAnchorY() {return (int)(pos_y - window.getPanelHeight()/2);}
+	public static float getX() {return pos_x;}
+	public static float getY() {return pos_y;}
+	public static int getAnchorX() {return (int)(pos_x - Window.getPanelWidth()/2);}
+	public static int getAnchorY() {return (int)(pos_y - Window.getPanelHeight()/2);}
 	public static Point getPoint() {return pos;}
 	public static String getString() {return "X: "+pos_x+" Y: "+pos_y;}
 	
@@ -32,7 +32,7 @@ public class Camera {
 	 * @param y - new pos y
 	 * @param ntime - movement interval
 	 */
-	public static void moveToPos(double x, double y, int ntime) {
+	public static void moveToPos(float x, float y, int ntime) {
 		moving = true;
 		origin = pos;
 		origin_x = origin.x;
@@ -71,8 +71,8 @@ public class Camera {
 					curDist = (newPos.y - pos_y) / (newPos.x - pos_x);
 				}
 				else {
-					Camera.setX(ControlManager.clamp(Player.getX() + 16, window.getPanelWidth()/2, (Level.getWidth()+1) * 32 - window.getPanelWidth()/2));
-					Camera.setY(ControlManager.clamp(Player.getY() + 16, window.getPanelHeight()/2, (Level.getHeight()+1) * 32 - window.getPanelHeight()/2));
+					Camera.setX(ControlManager.clamp(GameBase.getPlayerEntity().getX() + 16, Window.getPanelWidth()/2, (GameBase.getZone().getWidth()+1) * 32 - Window.getPanelWidth()/2));
+					Camera.setY(ControlManager.clamp(GameBase.getPlayerEntity().getY() + 16, Window.getPanelHeight()/2, (GameBase.getZone().getHeight()+1) * 32 - Window.getPanelHeight()/2));
 				}
 			} catch(ArithmeticException e){}
 		}

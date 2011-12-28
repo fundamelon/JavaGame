@@ -13,31 +13,22 @@ public class ControlManager {
 	private static char KEY_MOVE_SOUTH = "S".charAt(0);
 	private static char KEY_MOVE_EAST = "D".charAt(0);
 	private static char KEY_MOVE_WEST = "A".charAt(0);
-	private static double smoothTickX = 0, smoothTickY = 0;
+	private static float smoothTickX = 0, smoothTickY = 0;
 	private static boolean anyKeysPressed = false;
 	static boolean[] keys = new boolean[525];
 	static boolean[] keyPressed =  new boolean[keys.length];
 	
 	private static GraphicsManager gameGraphics;
-	public static double distancepy;
-	public static double distanceny;
-	public static double distancepx;
-	public static double distancenx;
 	public static long tick, lastTick, tickdiff;
-	private static double mousePos_x, mousePos_y;
+	private static float mousePos_x, mousePos_y;
 	private static int ticks;
 	public static int shake_time = 0;
-	static double playerMoveAmt = 1.4;
+	
+	public static int lag;
+	
+	public static Entity currentEntity;
+	public static Entity_player player = GameBase.getPlayerEntity();
 		
-	
-	/**
-	 * Set the player movement amount
-	 * @param move - new player movement amount
-	 */
-	public static void setplayerMovetAmt(int move){
-			playerMoveAmt = move;
-	}
-	
 	
 
 	/**
@@ -45,27 +36,21 @@ public class ControlManager {
 	 * @param nx - new pos x
 	 * @param ny - new pos y
 	 */
-	public static void setMousePos(double nx, double ny) {
+	public static void setMousePos(float nx, float ny) {
 		mousePos_x = nx;
 		mousePos_y = ny;
 	}
 	
 	
 	/** @return Mouse x position */
-	public static double getMouseX() {
+	public static float getMouseX() {
 		return mousePos_x;
 	}
 	
 	
 	/** @return Mouse y position */
-	public static double getMouseY() {
+	public static float getMouseY() {
 		return mousePos_y;
-	}
-	
-	
-	/**Just an accessor in case we need it*/
-	public static double getPlayerMoveAmt() {
-		return playerMoveAmt; 
 	}
 	
 	
@@ -77,7 +62,7 @@ public class ControlManager {
 		lastTick = tick;
 		tick = n;
 		movePlayerByAmt();	
-		jumpEntity();
+		tryJump(player);
 		updateUtilKeys();
 		
 		if(getKeyStatus("H".charAt(0)))
@@ -94,29 +79,38 @@ public class ControlManager {
 		
 	}
 	
+	
+	public static void setLag(int n) {
+		lag = n;
+	}
+	
+	public static int getLag() {
+		return lag;
+	}
+	
+	public static float getLagComp() {
+		return lag / 1000.0f;
+	}
+	
 	/**
 	 * Function fired regardless of keys pressed; keys are additively combined
 	 */
 	public static void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
 		//dx and dy are distance x and y respectively - these are sent to the player.
-		double dx=0, dy=0;
+		float dx=0, dy=0;
 
 		//Get keys pressed.
 		if(keys[KEY_MOVE_NORTH]){
-			dy = dy - playerMoveAmt;
-			distancepy++;
+			dy = dy - 1;
 		}
 		if(keys[KEY_MOVE_SOUTH]){
-			dy = dy + playerMoveAmt;
-			distanceny++;
+			dy = dy + 1;
 		}
 		if(keys[KEY_MOVE_EAST]){
-			dx = dx + playerMoveAmt;
-			distancepx++;
+			dx = dx + 1;
 		}
 		if(keys[KEY_MOVE_WEST]){
-			dx = dx - playerMoveAmt;
-			distancenx++;
+			dx = dx - 1;
 		}
 
 		//movement and movement speed controls.
@@ -147,7 +141,7 @@ public class ControlManager {
 			dx *= 0.7;
 			dy *= 0.7;
 		}
-		Player.move(dx * (tick / 10.0) , dy * (tick / 10.0));
+		player.move(dx * player.getMoveSpeed(), dy * player.getMoveSpeed());
 	
 	}
 	
@@ -155,9 +149,9 @@ public class ControlManager {
 	/**
 	 * Set Player's Z velocity upward to simulate a jump
 	 */
-	public static void jumpEntity() {
-		if(keys[" ".charAt(0)] && !Player.isJumping()) 
-			Player.setVelZ(9);
+	public static void tryJump(Entity ent) {
+		if(keys[" ".charAt(0)] && !player.isJumping()) 
+			ent.jump();
 	}
 	
 	
@@ -185,7 +179,7 @@ public class ControlManager {
 		updateUtilKeys();
 		
 		if(!keys[kC]) {						//Check if they key hasn't been already registered - prevents glitches.
-			System.out.println(kC);
+		//	System.out.println(kC);
 			keys[kC] = true;				//Add the key to a boolean array.
 			if(kC == 27) {
 				if(GameLogic.inMainMenu()) GameLogic.closeMainMenu(); else GameLogic.openMainMenu();
@@ -243,8 +237,16 @@ public class ControlManager {
 	 * @param low - lower limit
 	 * @return clamped value
 	 */
-	public static double clamp(double i, int high, int low) {
-		return Math.max (high, Math.min (i, low));
+	public static double clamp(double i, double high, double low) {
+		return Math.max(high, Math.min(i, low));
+	}
+	
+	public static float clamp(float i, float high, float low) {
+		return Math.max(high, Math.min(i, low));
+	}
+	
+	public static int clamp(int i, int high, int low) {
+		return Math.max(high, Math.min(i, low));
 	}
 
 	

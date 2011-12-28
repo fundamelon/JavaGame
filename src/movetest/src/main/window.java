@@ -3,13 +3,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 
-public class window {	
-	private static grid panel;
+public class Window {	
+	private static GameBase panel;
 	private static JFrame theGUI;
 	public static BufferStrategy buffer;
 	public static void main(String [] args){
 		theGUI = new JFrame();
-		theGUI.setTitle("Grid Movement Test");
+		theGUI.setTitle("GameBase Movement Test");
 		theGUI.setSize(900, 900);
 		theGUI.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		theGUI.setIconImage(new ImageIcon().getImage());
@@ -17,7 +17,7 @@ public class window {
 		theGUI.createBufferStrategy(2); //Double buffering initialized.
 		buffer = theGUI.getBufferStrategy(); //Get this frame's buffer object.
 		try {
-			panel = new grid(Color.white, 640, 480);
+			panel = new GameBase(Color.white, 640, 480);
 			theGUI.addKeyListener(panel);
 			theGUI.addMouseListener(panel);
 			Container pane = theGUI.getContentPane();
@@ -37,7 +37,7 @@ public class window {
 		return theGUI;
 	}
 	
-	public static grid getPanel() {
+	public static GameBase getPanel() {
 		return panel;
 	}
 	

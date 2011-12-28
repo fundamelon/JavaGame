@@ -1,11 +1,11 @@
 package main;
 
 public class GameLogic {
-	public static boolean
+	private static boolean
 		playerDead,
 		gameWon,
-		inMainMenu = true,
-		inGameView = false
+		inMainMenu = false,
+		inGameView = true
 	;
 	public static void reportPlayerDeath() {
 	}

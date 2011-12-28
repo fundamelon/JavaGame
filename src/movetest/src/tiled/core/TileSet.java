@@ -79,11 +79,15 @@ public class TileSet implements Iterable<Tile>
     {
         setTilesetImageFilename(imgFilename);
 
+        //TODO: quick fix to include lib directory
+        imgFilename = "lib"+imgFilename.substring(2);
+        System.out.println(imgFilename);
+        
         Image image = ImageIO.read(new File(imgFilename));
         if (image == null) {
             throw new IOException("Failed to load " + tilebmpFile);
         }
-
+        
         Toolkit tk = Toolkit.getDefaultToolkit();
 
         if (transparentColor != null) {

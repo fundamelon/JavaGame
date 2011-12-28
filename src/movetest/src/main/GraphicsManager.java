@@ -7,21 +7,21 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Robot;
 
 import javax.imageio.ImageIO;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 
+import tiled.view.OrthogonalRenderer;
+import tiled.core.Map;
+import tiled.core.TileLayer;
 
 public class GraphicsManager {
 	
 	static BufferedImage[] texture;
-	static grid panel;
-	private static Random seed_rand = new Random(), rand = new Random();
-	private static int textureSeed = seed_rand.nextInt(64);
-	private static ControlManager gameControls;
+	static GameBase panel;
+	private static Random rand = new Random();
 	public static ParticleEmitter emitters[] = new ParticleEmitter[1000];
 	public static ParticleEmitter emitter_dump[] = new ParticleEmitter[emitters.length];
 	private static int sparkct = 0, particle_count = 0;
@@ -30,52 +30,44 @@ public class GraphicsManager {
 	private static Image camIcon, dbImage;
 	private static int fps_lag;
 	public static boolean first_run = true;
+	private static OrthogonalRenderer mapRenderer;
 	
 	private static Color fadeCol = new Color(0, 0, 0);
 	private static Color overlayCol = new Color(fadeCol.getRed(), fadeCol.getGreen(), fadeCol.getBlue(), 0);
 	//Vars with preceding underscore are to be values for render options.  :O
 	private static boolean _dither = false, fadeMode = true, helperText = false, shake = false;
 	
+	private static int lag;
+	
 	private static BufferedImage bg_blurred;
 	
 	/**
 	 * Initializes the object and loads images.
-	 * @param transPanel - the instance of grid to be used
+	 * @param transPanel - the instance of GameBase to be used
 	 */
-	public static void init(grid transPanel) {
-		panel = transPanel;
-		String path = "";
+	public static void init() {
+		panel = Window.getPanel();
+		mapRenderer = new OrthogonalRenderer(GameBase.getZone().getData());
 		
-		//Try and load the textures.
+		//Empty for now.  We'll see about it later.
 		texture = new BufferedImage[10];
-		for(int i = 0; i < texture.length; i++) {
-			try {
-				texture[0] = ImageIO.read(new File("lib/img/camicon.png"));
-				texture[1] = ImageIO.read(new File("lib/img/grass1.png"));
-				texture[2] = ImageIO.read(new File("lib/img/grass2.png"));
-				texture[3] = ImageIO.read(new File("lib/img/grass3.png"));
-				texture[4] = ImageIO.read(new File("lib/img/stone1.png"));
-				texture[5] = ImageIO.read(new File("lib/img/stone2.png"));
-				texture[6] = ImageIO.read(new File("lib/img/stone3.png"));
-				texture[7] = ImageIO.read(new File("lib/img/grass_end1.png"));
-				texture[8] = ImageIO.read(new File("lib/img/grass_end2.png"));
-				texture[9] = ImageIO.read(new File("lib/img/grass_end3.png"));
-			} catch(IOException e) {
-				System.out.println("ERROR: Failed to load " + path);
-			}
-		}
-		
 		camIcon = texture[0];
 		
 		
 	}
 	
+	public static void setLag(int n) {
+		lag = n;
+	}
+	
+	
+	
 	/**
-	 * Main function that redraws all graphics on a grid.
+	 * Main function that redraws all graphics on a GameBase.
 	 * @param g - Graphics context
-	 * @param panel - the grid to draw on
+	 * @param panel - the GameBase to draw on
 	 */
-	public static void drawGameView(Graphics g, grid panel) {
+	public static void drawGameView(Graphics g, GameBase panel) {
 		Graphics2D g2 = (Graphics2D) g;
 		Color oldCol;
 
@@ -92,11 +84,13 @@ public class GraphicsManager {
                        RenderingHints.VALUE_COLOR_RENDER_SPEED);
 		g2.setRenderingHint(RenderingHints.KEY_DITHERING,
                        RenderingHints.VALUE_DITHER_DISABLE);
-                       
+
+		
 		//Set the camera to follow the player with the players coordinates, then update the camera.
 		Camera.followPlayer();
-		Camera.moveToPos(Player.getX() + 16, Player.getY() + 16, 1); 
+		Camera.moveToPos(GameBase.getPlayerEntity().getX() + 16, GameBase.getPlayerEntity().getY() + 16, 1); 
 		Camera.update();
+
 		
 		//Random offsets "shake" the camera.
 		if(shake) 
@@ -105,29 +99,34 @@ public class GraphicsManager {
 			g2.translate(-Camera.getAnchorX(), -Camera.getAnchorY());
 		shake = false;
 		
-		//Draw background and grid first.
-		drawGrid(g2);
-		drawBackground(g2);
+		//Draw background and GameBase first.  Removed for now.
+	//	drawBackground(g2);
+	//	drawGrid(g2);
 		
-		//Next draw a square representing the tile the player is currently on.
+		drawMap(g2);
+
+		
+		
+		//DEBUG: Next draw a square representing the tile the player is currently on.
 		oldCol = g2.getColor();
 		g2.setColor(new Color(0, 0, 255, 50));
 	//	g2.fillRect((int)Math.round(Player.getX() / 32) * 32, (int)Math.round(Player.getY() / 32) * 32, 32, 32);
 		g2.setColor(oldCol);
 		
 		
+		
+		//Effects are drawn last along with the camera center point icon.
+		drawEffects(g2);
+		GameBase.getPlayerEntity().draw(g2);
+		drawFrontEffects(g2);
+	//	g2.drawImage(camIcon, (int)Camera.getX() - 7, (int)Camera.getY() - 3, null);
+
 		//This will update the fade amount then apply a dark box to the entire viewport based on the fade value.
 		oldCol = g2.getColor();
 		fade();
 		g2.setColor(overlayCol);
-		g2.fillRect((int)toLocalX(0), (int)toLocalY(0), (int)toLocalX(window.getPanelWidth()), (int)toLocalY(window.getPanelHeight()));
+		g2.fillRect((int)toLocalX(0), (int)toLocalY(0), (int)toLocalX(Window.getPanelWidth()), (int)toLocalY(Window.getPanelHeight()));
 		g2.setColor(oldCol);
-		
-		//Effects are drawn last along with the camera center point icon.
-		drawEffects(g2);
-		Player.draw(g2);
-		drawFrontEffects(g2);
-	//	g2.drawImage(camIcon, (int)Camera.getX() - 7, (int)Camera.getY() - 3, null);
 		
 		//Draw helper text menu if it's called upon.
 		if(helperText) {
@@ -154,21 +153,18 @@ public class GraphicsManager {
 					        0.111f, 0.111f, 0.111f, 
 					    };
 					op = new ConvolveOp( new Kernel(3, 3, matrix), ConvolveOp.EDGE_NO_OP, null );
-					bg_blurred = new Robot().createScreenCapture(new Rectangle(window.getPanel().getLocationOnScreen().x, window.getPanel().getLocationOnScreen().y, window.getPanelWidth(), window.getPanelHeight()));
-					bg_blurred = new Robot().createScreenCapture(new Rectangle(window.getPanel().getLocationOnScreen().x, window.getPanel().getLocationOnScreen().y, window.getPanelWidth(), window.getPanelHeight()));
-					bg_blurred = new Robot().createScreenCapture(new Rectangle(window.getPanel().getLocationOnScreen().x, window.getPanel().getLocationOnScreen().y, window.getPanelWidth(), window.getPanelHeight()));
+					bg_blurred = panel.override.createScreenCapture(new Rectangle(Window.getPanel().getLocationOnScreen().x, Window.getPanel().getLocationOnScreen().y, Window.getPanelWidth(), Window.getPanelHeight()));
 					BufferedImage trans = null;
 					bg_blurred = op.filter(bg_blurred, trans);
 					g2.drawImage(bg_blurred, op, 0, 0);
-				//	bg_blurred = new Robot().createScreenCapture(new Rectangle(window.getPanel().getLocationOnScreen().x, window.getPanel().getLocationOnScreen().y, window.getPanelWidth(), window.getPanelHeight()));
+				//	bg_blurred = new Robot().createScreenCapture(new Rectangle(Window.getPanel().getLocationOnScreen().x, Window.getPanel().getLocationOnScreen().y, Window.getPanelWidth(), Window.getPanelHeight()));
 					done = true;
-				} catch (AWTException e) {done=false;}
+				} catch (Exception e) {e.printStackTrace(); done=true;}
 		}
 		first_run = false;
 		g2.drawImage(bg_blurred, 0, 0, null);
 		g2.setColor(new Color(0, 0, 0, 15));
-		g2.fillRect(0, 0, window.getPanelWidth(), window.getPanelHeight());
-		grid panel = window.getPanel();
+		g2.fillRect(0, 0, Window.getPanelWidth(), Window.getPanelHeight());
 		g2.setColor(new Color(0, 0, 0, 120));
 		g2.fillRect(panel.getWidth() / 2 - panel.getWidth() / 6, 200, panel.getWidth() / 3, 100);
 		g2.setColor(Color.white);
@@ -187,27 +183,19 @@ public class GraphicsManager {
 			sparkct = 0;
 		else
 			sparkct++;
-		emitters[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 200, 40, 40, 0.8, 0.8, 1, false, false, Color.yellow);
-		emitters[sparkct].setParticleSize(1);
+		emitters[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 10, 400, 400, 400, 0.0f, 1, false, false, Color.yellow);
+		emitters[sparkct].setParticleSize(0);
 		emitters[sparkct].setTrails(true);
-		emitters[sparkct].toggleModifier(2);
-		emitters[sparkct].toggleModifier(3);
+	//	emitters[sparkct].toggleModifier(0);
+	//	emitters[sparkct].toggleModifier(3);
 		if(sparkct == emitters.length-1) 
 			sparkct = 0;
 		else
 			sparkct++;
-		emitters[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 0, 5, 5, 0.9, 0.9, 0.1, false, false, Color.gray);
-	
+		emitters[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 0, 5, 5, 0.9f, 0.9f, 0.1f, false, false, Color.gray);
 	}
 	
 	
-	/**
-	 * Update the fps lag.
-	 * @param n the fps delay
-	 */
-	public static void clk(int n) {
-		fps_lag = n;
-	}
 	
 	
 	/**
@@ -216,99 +204,23 @@ public class GraphicsManager {
 	 */
 	public static void drawPlayer(Graphics g) {}
 	
+	public static void drawMap(Graphics2D g2) {
+		Object [] mapArray = GameBase.getZone().getData().getLayers().toArray();
+		TileLayer transLayer = new TileLayer(GameBase.getZone().getData(), GameBase.getZone().getWidth(), GameBase.getZone().getHeight());
+		for(int i = 0; i < mapArray.length; i++) {
+			transLayer.copyFrom(GameBase.getZone().getData().getLayers().elementAt(i));
+			mapRenderer.paintTileLayer(g2, transLayer);
+		}
+	}
+	
+	
 	
 	/**
-	 * Draw the tile textures used on the background.
+	 * Draw the tile textures used on the background. OBSOLETE + REMOVED
 	 * @param g2 - Graphics2D context
 	 */
-	public static void drawBackground(Graphics2D g2) {		
-		//Read and load all the tile files into the array.
-		//Set a random seed so random is the same every time it renders.
-		seed_rand.setSeed(textureSeed);
-		int curPosX = 0, curPosY = 0;
-		
-		
-		//Draw tiles.  TODO: Clean this shit up.  Algorithm is inverted :\
-		for(int k = 0; k <= Level.getWidth(); k++) {
-			for(int c = 0; c <= Level.getHeight(); c++) {
-				curPosX = k * 32; 	//Current screen x position in pixels.  Increments by 32.
-				curPosY = c * 32;	//Current screen y pos in pixels.  Increments of 32.
-				
-				if((k == 0)  || (k == Level.getWidth()) || (c == 0) || (c == Level.getHeight())) { 
-					
-					
-					//If it's on the edge first draw stone underlay
-					g2.drawImage(texture[seed_rand.nextInt(3)+4], curPosX, curPosY, curPosX + 32, curPosY+32, 0, 0, 32, 32, null);
-					
-					//Grass edge pictures
-					//Left column
-					if(k==Level.getWidth()) {
-						//Top left corner
-						if(c == 0) {
-							g2.drawImage(texture[9], curPosX, curPosY, null);
-						}
-						//In between
-						else if(c != Level.getHeight()) {
-							g2.drawImage(texture[seed_rand.nextInt(2)+7], curPosX, curPosY, null);
-						}
-						//Bottom left corner
-						else {
-							g2.drawImage(texture[9], curPosX, curPosY + 32, curPosX + 32, curPosY, 0, 0, 32, 32, null);
-						}
-					}
-					
-					//Right column
-					if(k==0) {
-						//Top right corner
-						if(c==0) {
-							g2.drawImage(texture[9], curPosX + 32, curPosY, curPosX, curPosY+32, 0, 0, 32, 32, null);
-						}
-						//In between
-						else if(c != Level.getHeight()) {
-							g2.drawImage(texture[seed_rand.nextInt(2)+7], curPosX + 32, curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
-						}
-						//Top left corner
-						else {
-							g2.drawImage(texture[9], curPosX + 32, curPosY + 32, curPosX, curPosY, 0, 0, 32, 32, null);
-						}
-					}
-					
-					//If it's not far left or right column
-					if(k != 0 && k != Level.getWidth()) {
-						//Top row
-						
-						//Funky way of doing it.  The entire window is translated then rotated, the image drawn at origin, then the window position reset.
-						g2.translate(curPosX + 16, curPosY + 16);
-						if(c==0) {
-							g2.rotate(-0.5 * Math.PI);
-							g2.drawImage(texture[seed_rand.nextInt(2)+7], -16, -16, null);
-							g2.rotate(0.5 * Math.PI);
-						}
-						//Bottom row
-						if(c==Level.getHeight()) {
-							g2.rotate(0.5 * Math.PI);
-							g2.drawImage(texture[seed_rand.nextInt(2)+7], -16, -16, null);
-							g2.rotate(-0.5 * Math.PI);
-						}
-						g2.translate(-curPosX - 16, -curPosY - 16);
-					}
-				}
-				else {
-					//Just draw a grass tile if it's not a boundary
-					g2.translate(curPosX + 16, curPosY + 16);
-				//	double rot = ((seed_rand.nextInt(8) / 2.0) - 2);
-				//	g2.rotate(rot * Math.PI);
-					g2.drawImage(texture[seed_rand.nextInt(3)+1], -16, -16, null);
-				//	g2.rotate(rot * -Math.PI);
-					g2.translate(-curPosX - 16, -curPosY - 16);
-				}
-			}
-			if(ControlManager.getKeyStatus("R".charAt(0))) {
-				textureSeed++;
-			}
-		}
-		
-	}
+	public static void drawBackground(Graphics2D g2) {}
+	
 	
 	/**
 	 * Simple method to display strings.
@@ -318,7 +230,7 @@ public class GraphicsManager {
 	 * @param y - Pos in pizels
 	 * @param local - True means it's local to the camera, false means it's static on the map surface.
 	 */
-	public static void print(Graphics2D g2, String text, double x, double y, boolean local) {
+	public static void print(Graphics2D g2, String text, float x, float y, boolean local) {
 		if(local) 
 			g2.drawString(text, (int)toLocalX(x), (int)toLocalY(y));
 		else
@@ -332,7 +244,7 @@ public class GraphicsManager {
 	public static void drawEffects(Graphics2D g2) {
 		for(int i = 0; i < emitters.length; i++) {
 			if(emitters[i] != null) 
-				if(emitters[i].getY() < Player.getY() + Player.getZ() + 32)
+				if(emitters[i].getY() < GameBase.getPlayerEntity().getY() + GameBase.getPlayerEntity().getZ() + 32)
 					emitters[i].draw(g2, ticks);
 				else
 					emitter_dump[i] = emitters[i];
@@ -360,13 +272,13 @@ public class GraphicsManager {
 		int k=0;
 		Color oldColor = g.getColor();
 		g.setColor(new Color(200, 200, 200));
-		int htOfRow = panel.getHeight() / 15;
+		int htOfRow = Window.getPanelHeight() / 15;
 		for (k = 0; k <= 15; k++)
-			g.drawLine(0, k * htOfRow , panel.getWidth(), k * htOfRow );
+			g.drawLine(0, k * htOfRow , Window.getPanelWidth(), k * htOfRow );
 		
-		int wdOfRow = panel.getWidth() / 20;
+		int wdOfRow = Window.getPanelWidth() / 20;
 		for (k = 0; k <= 20; k++) 
-			g.drawLine(k*wdOfRow , 0, k*wdOfRow , panel.getHeight());
+			g.drawLine(k*wdOfRow , 0, k*wdOfRow , Window.getPanelHeight());
 		
 		g.setColor(oldColor);
 	}
@@ -438,7 +350,7 @@ public class GraphicsManager {
 	 * @param ox - original x value
 	 * @return localized x value
 	 */
-	public static double toLocalX(double ox) {
+	public static float toLocalX(float ox) {
 		return ox + Camera.getAnchorX();
 	}
 	/**
@@ -446,7 +358,7 @@ public class GraphicsManager {
 	 * @param oy - original y value
 	 * @return localized y value
 	 */
-	public static double toLocalY(double oy) {
+	public static float toLocalY(float oy) {
 		return oy + Camera.getAnchorY();
 	}
 }

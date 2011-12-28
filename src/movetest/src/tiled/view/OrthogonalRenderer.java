@@ -22,6 +22,7 @@ package tiled.view;
 import tiled.core.Map;
 import tiled.core.Tile;
 import tiled.core.TileLayer;
+import main.Camera;
 
 import java.awt.*;
 
@@ -44,7 +45,7 @@ public class OrthogonalRenderer implements MapRenderer
     }
 
     public void paintTileLayer(Graphics2D g, TileLayer layer) {
-        final Rectangle clip = g.getClipBounds();
+        final Rectangle clip = new Rectangle((int)Camera.getAnchorX(), (int)Camera.getAnchorY(), main.Window.getPanelWidth(), main.Window.getPanelHeight());
         final int tileWidth = map.getTileWidth();
         final int tileHeight = map.getTileHeight();
         final Rectangle bounds = layer.getBounds();
