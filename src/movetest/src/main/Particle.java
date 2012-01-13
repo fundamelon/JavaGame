@@ -6,7 +6,7 @@ import java.util.Random;
 public class Particle {
 	
 	//Placeholder that only knows its own values and can change them according to a model.
-	private float x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y, life, mouse_x, mouse_y, start_x, start_y, alpha;
+	private float x, y, rate_x, rate_y, dec_x, dec_y, trace_x, trace_y, life, mouse_x, mouse_y, start_x, start_y, startalpha, curalpha;
 	private float ang = 0, ang2=180;
 	private long startTick, lastTick;
 	private boolean alive, trace, grav;
@@ -59,7 +59,7 @@ public class Particle {
 		this.start_x = x;
 		this.start_y = y;
 		this.setColor(newColor);
-		this.setAlpha(100);
+		this.setAlpha(255);
 	}
 	
 	
@@ -82,9 +82,10 @@ public class Particle {
 	public void setLife(float nlife) {life = nlife;}
 	public void setColor(Color nC) {curCol = nC;}
 	
-	public void setAlpha(int n) {
-		curCol = new Color(curCol.getRed(), curCol.getGreen(), curCol.getBlue(), n);
-		alpha = n;
+	public void setAlpha(float in) {
+		int n = (int)in;
+		curCol = new Color(curCol.getRed(), curCol.getGreen(), curCol.getBlue(), ControlManager.clamp(0, 255, n));
+		startalpha = n;
 	}
 	
 	public float getX() { return x; }
@@ -116,69 +117,15 @@ public class Particle {
 	 */
 	public void move(long delay) {
 		if(alive) {
-			float dx = 0, dy = 0, nrx = this.rate_x, nry = this.rate_y;
-			mouse_x = ControlManager.getMouseX();
-			mouse_y = ControlManager.getMouseY();
-			//Trace line origin is the previous X and Y.
 			trace_x = x;
 			trace_y = y;
 			
+			if(Math.abs(rate_x) > 0.1) rate_x *= dec_x * ControlManager.getLagComp(); else rate_x = 0;
+			if(Math.abs(rate_y) > 0.1) rate_y *= dec_y * ControlManager.getLagComp(); else rate_y = 0;
 			
-			//Decrease the rates via the decay variables.
-			if(Math.abs(nrx) > 0.1) 
-				nrx -= dec_x * Math.signum(nrx);
-			else if(!grav) nrx = 0;
-			if(Math.abs(nry) > 0.1)
-				nry -= dec_y * Math.signum(nrx);
-			else if(!grav) nry = 0;
+			x += rate_x;
+			y += rate_y;
 			
-			//Make a random angle, then add its sin and cos to the particle.
-			Random rand = new Random();
-			//if(ang<360) 
-				ang+=1;// else ang = 0;
-				
-				ang2+= 2 * (rand.nextDouble() - 0.5);
-			
-			//Various thingies you can use to modify each particles random movement.
-			if(modifiers[0]) {
-				nrx-= (this.x - mouse_x) * 0.02 * -rate_x;
-				nry-= (this.y - mouse_y) * 0.02 * -rate_y;
-			}
-			
-			if(modifiers[1]) {	
-				nrx += Math.cos(ang) * 3 + Math.cos(ang2);
-				nry += Math.sin(ang) * 3 + Math.sin(ang2);
-			}
-				
-			if(modifiers[2]) {
-				nrx += rand.nextDouble() * 2 - 1;
-				nry += rand.nextDouble() * 2 - 1;
-			}
-			
-			if(modifiers[3]) {
-				nry = -Math.abs(this.rate_y);
-			}
-			
-			//Just makes the particles fan out on top and float upwards.
-			if(grav){
-				if(this.y - nry >= start_y) {
-					nry = 0;
-					dy = start_y;
-					this.setLife(Math.max(0, this.getLife() + 12));
-				} else {
-					nry += 1;
-				}
-			}
-			alpha -= this.getLife() * ControlManager.getLagComp();
-			this.setColor(new Color(this.getRed(), this.getGreen(), this.getBlue(), (int)Math.max(alpha, 0)));
-			if(this.getAlpha() == 0) {this.kill();}
-			
-			this.rate_x -= nrx * ControlManager.getLagComp();
-			this.rate_y -= grav ? Math.abs(nry) : nry * ControlManager.getLagComp();
-			
-			this.x += (this.rate_x + dx) * ControlManager.getLagComp();
-			this.y += (this.rate_y + dy) * ControlManager.getLagComp();
-
 			
 		} else {
 			//Stuff to do if its dead.

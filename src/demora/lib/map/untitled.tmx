@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="100" height="100" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="grass1" tilewidth="32" tileheight="32">
+  <image source="../img/grass1.png" width="32" height="32"/>
+ </tileset>
+ <tileset firstgid="2" name="sand_transition" tilewidth="32" tileheight="32">
+  <image source="../img/prog/sand_transition.png" trans="000000" width="160" height="96"/>
+ </tileset>
+ <tileset firstgid="17" name="util_0" tilewidth="32" tileheight="32">
+  <image source="../img/tilesets/dev/util_0.png" trans="000000" width="96" height="64"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMBKH7/qUHy6Hgqqmqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv8AX0MnEQ==
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJzt3duKwyAUBVCZa9O5pP//tRNpDojEmZdUM2QtOFSSPogbRfNiShzN01LPVb0M7dG5vS91Wep1qbe1PaV7TnLpL/KYivZ1qY/1VyZ91RlcqprGde2UPtN9ncrr1ddasW7lZ9/junZaeY6Ua1POKOciizGMP/Q1F+3yjGO/Nk7kUO7bprR9BpXV/upxzjncqro2nsc7mewn9s5bYx376db7KOedfeW9c2uc8/xpzY3Iyx5vX6058ts6ZV48Vpxn4pyfqzUnIjt5PN5WLvW3MWfR/mLM65IBAAAAAAAAAAAAAAAAAAAAAAAAAADQMv/9Fzqak0yOYq6Kceos5DHOVhbyGEcexyWL/yXuV3JH0jGUd/cynrtHAAAAAAAAAMh+AK9OCJU=
+  </data>
+ </layer>
+ <layer name="util" width="100" height="100" opacity="0.45">
+  <data encoding="base64" compression="zlib">
+   eJzt1UsKwCAMBUCv0N/9r9ptkFBctLGlM5BNzCoPtTUAAAAAAAAAAOAPlq6YSx7vIo95+t1nRZ0j6cngfuvgXNz9nvTinPvyvJH3KuYgj3rbxZk86vnfAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4uhOeGQN/
+  </data>
+ </layer>
+</map>

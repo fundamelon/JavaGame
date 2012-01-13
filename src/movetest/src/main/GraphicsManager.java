@@ -183,7 +183,7 @@ public class GraphicsManager {
 			sparkct = 0;
 		else
 			sparkct++;
-		emitters[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 10, 400, 400, 400, 0.0f, 1, false, false, Color.yellow);
+		emitters[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 1000, 400, 40, 100, 100, 2, false, false, Color.yellow);
 		emitters[sparkct].setParticleSize(0);
 		emitters[sparkct].setTrails(true);
 	//	emitters[sparkct].toggleModifier(0);
