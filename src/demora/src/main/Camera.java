@@ -4,7 +4,7 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 
 public class Camera {
-	public static Point pos = new Point(Window.getPanelWidth()/2, Window.getPanelHeight()/2);
+	public static Point pos = new Point(GameBase.getWidth()/2, GameBase.getHeight()/2);
 	public static float pos_x = pos.x, pos_y = pos.y;
 	public static Point origin = pos;
 	public static float origin_x = pos.x, origin_y = pos.y;
@@ -21,8 +21,8 @@ public class Camera {
 	
 	public static float getX() {return pos_x;}
 	public static float getY() {return pos_y;}
-	public static int getAnchorX() {return (int)(pos_x - Window.getPanelWidth()/2);}
-	public static int getAnchorY() {return (int)(pos_y - Window.getPanelHeight()/2);}
+	public static int getAnchorX() {return (int)(pos_x - GameBase.getWidth()/2);}
+	public static int getAnchorY() {return (int)(pos_y - GameBase.getHeight()/2);}
 	public static Point getPoint() {return pos;}
 	public static String getString() {return "X: "+pos_x+" Y: "+pos_y;}
 	
@@ -71,8 +71,8 @@ public class Camera {
 					curDist = (newPos.y - pos_y) / (newPos.x - pos_x);
 				}
 				else {
-					Camera.setX(ControlManager.clamp(GameBase.getPlayerEntity().getX() + 16, Window.getPanelWidth()/2, (GameBase.getZone().getWidth()+1) * 32 - Window.getPanelWidth()/2));
-					Camera.setY(ControlManager.clamp(GameBase.getPlayerEntity().getY() + 16, Window.getPanelHeight()/2, (GameBase.getZone().getHeight()+1) * 32 - Window.getPanelHeight()/2));
+					Camera.setX(ControlManager.clamp(EntityManager.getPlayer().getX() + 16, GameBase.getWidth()/2, (GameBase.getZone().getWidth()+1) * 32 - GameBase.getWidth()/2));
+					Camera.setY(ControlManager.clamp(EntityManager.getPlayer().getY() + 16, GameBase.getHeight()/2, (GameBase.getZone().getHeight()+1) * 32 - GameBase.getHeight()/2));
 				}
 			} catch(ArithmeticException e){}
 		}

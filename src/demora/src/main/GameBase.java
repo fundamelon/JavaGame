@@ -1,259 +1,221 @@
 package main;
-import javax.swing.*;
 
-import main.entity.Entity_player;
+import main.entity.Entity;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferStrategy;
-import java.awt.Robot;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.Sys;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.opengl.GL11;
 
-public class GameBase extends JPanel implements KeyListener, MouseListener, Runnable {
-	private static final long serialVersionUID = 6306113229343973266L;
+import org.newdawn.slick.Graphics;
+
+public class GameBase {
 	
-	private boolean first = true;
-	private BufferStrategy buffer;
-	private static int scaleMul = 1;
-	private Image dbImage;
-	private Graphics dbg;
-	private long startTime = System.currentTimeMillis(), curTime;
-	private Point mousePos;
-	private boolean mousedown = false, endgame = false;
-	private Thread th;
-	public Robot override;
-	
-	private long tick = 0;
-	
+
 	private static Zone currentZone;
 	
-	private static Entity_player ENT_Player;
+	private static Entity ENT_Player;
 	
-	private int frame = 0, fps_frame = 0, fps = 20, fps_goal = 65, delay = 1000 / fps_goal, lag = 0;
-	private long frameTime;
+	
+	
+	/** time at last frame */
+	static long lastFrame;
+	
+	/** frames per second */
+	static int fps;
+	/** last fps time */
+	static long lastFPS;
+	
+	static boolean vsync;
+
+	
+	public static void main(String[] args) {
+		GameBase.start();
+	}
+	
+	public static void start() {
+		try {
+			Display.setDisplayMode(new DisplayMode(800, 600));
+			Display.create();
+		} catch (LWJGLException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+		Graphics g = new Graphics();
+		
+		currentZone = new Zone();
+		
+		GraphicsManager.init();
+		ControlManager.init();
+		EntityManager.init();
+
+		initGL(); // init OpenGL
+		getDelta(); // call once before loop to initialise lastFrame
+		lastFPS = getTime(); // call before loop to initialise fps timer
+
+		while (!Display.isCloseRequested()) {
+			int delta = getDelta();
+
+			update(delta);
+			render(g);
+
+			Display.update();
+			g.clear();
+		//	Display.sync(60); // cap fps to 60fps
+		}
+
+		Display.destroy();
+	}
+	
+	public static void update(int delta) {
+		
+		//Keyboard Event Handlers!!
+		//TODO: Move to ControlManager
+		
+		ControlManager.update(delta);
+		
+		while (Keyboard.next()) {
+		    if (Keyboard.getEventKeyState()) {
+		        if (Keyboard.getEventKey() == Keyboard.KEY_F) {
+		        	setDisplayMode(800, 600, !Display.isFullscreen());
+		        }
+		        else if (Keyboard.getEventKey() == Keyboard.KEY_V) {
+		        	vsync = !vsync;
+		        	Display.setVSyncEnabled(vsync);
+		        }
+		    }
+		}
+		
+		if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
+			System.exit(0);
+			
+		
+		updateFPS(); // update FPS Counter
+	}
+	
+	public static void setDisplayMode(int width, int height, boolean fullscreen) {
+
+	    // return if requested DisplayMode is already set
+	    if ((Display.getDisplayMode().getWidth() == width) && 
+	        (Display.getDisplayMode().getHeight() == height) && 
+		(Display.isFullscreen() == fullscreen)) {
+		    return;
+	    }
+
+	    try {
+	        DisplayMode targetDisplayMode = null;
+			
+		if (fullscreen) {
+		    DisplayMode[] modes = Display.getAvailableDisplayModes();
+		    int freq = 0;
+					
+		    for (int i=0;i<modes.length;i++) {
+		        DisplayMode current = modes[i];
+						
+			if ((current.getWidth() == width) && (current.getHeight() == height)) {
+			    if ((targetDisplayMode == null) || (current.getFrequency() >= freq)) {
+			        if ((targetDisplayMode == null) || (current.getBitsPerPixel() > targetDisplayMode.getBitsPerPixel())) {
+				    targetDisplayMode = current;
+				    freq = targetDisplayMode.getFrequency();
+	                        }
+	                    }
+
+			    // if we've found a match for bpp and frequence against the 
+			    // original display mode then it's probably best to go for this one
+			    // since it's most likely compatible with the monitor
+			    if ((current.getBitsPerPixel() == Display.getDesktopDisplayMode().getBitsPerPixel()) &&
+	                        (current.getFrequency() == Display.getDesktopDisplayMode().getFrequency())) {
+	                            targetDisplayMode = current;
+	                            break;
+	                    }
+	                }
+	            }
+	        } else {
+	            targetDisplayMode = new DisplayMode(width,height);
+	        }
+
+	        if (targetDisplayMode == null) {
+	            System.out.println("Failed to find value mode: "+width+"x"+height+" fs="+fullscreen);
+	            return;
+	        }
+
+	        Display.setDisplayMode(targetDisplayMode);
+	        Display.setFullscreen(fullscreen);
+				
+	    } catch (LWJGLException e) {
+	        System.out.println("Unable to setup mode "+width+"x"+height+" fullscreen="+fullscreen + e);
+	    }
+	}
+	
+	/** 
+	 * Calculate how many milliseconds have passed 
+	 * since last frame.
+	 * 
+	 * @return milliseconds passed since last frame 
+	 */
+	public static int getDelta() {
+	    long time = getTime();
+	    int delta = (int) (time - lastFrame);
+	    lastFrame = time;
+	 
+	    return delta;
+	}
+	
+	/**
+	 * Get the accurate system time
+	 * 
+	 * @return The system time in milliseconds
+	 */
+	public static long getTime() {
+	    return (Sys.getTime() * 1000) / Sys.getTimerResolution();
+	}
+	
+	/**
+	 * Calculate the FPS and set it in the title bar
+	 */
+	public static void updateFPS() {
+		if (getTime() - lastFPS > 1000) {
+			Display.setTitle("FPS: " + fps);
+			fps = 0;
+			lastFPS += 1000;
+		}
+		fps++;
+	}
+	
+	public static void initGL() {
+		GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GL11.glLoadIdentity();
+		GL11.glOrtho(0, 800, 600, 0, 1, -1);
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		
+		//Fix transparent pixels being black
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	public static void render(Graphics g) {
+		g.drawLine(0.0f, 0f, 100f, 100f);
+		GraphicsManager.renderMain(g, getDelta());
+	}
+	
+	public static int getWidth() {
+		return Display.getWidth();
+	}
+	
+	public static int getHeight() {
+		return Display.getHeight();
+	}
+	
+	
+	
+	
+	public static void loadZone(Zone newZone) {
+		currentZone = newZone;
+	}
 	
 	public static Zone getZone() {
 		return currentZone;
-	}
-	
-	public static Entity_player getPlayerEntity() {
-		return ENT_Player;
-	}
-	
-	public static int getScaleMul() {
-		return scaleMul;
-	}
-	
-	/**OBSOLETE*/
-	public void init() {
-		//Compute millis needed for the fps.
-		delay = (fps_goal > 0) ? (1000  / fps_goal) : 100;
-	}
-	
-	
-	/**
-	 * Assign program to a thread and start it.
-	 */
-	public void start() {
-		
-		ENT_Player = new Entity_player();
-		ENT_Player.setBlockSize(this.getWidth()/20);
-		
-		//init robot
-		try {
-			override = new Robot();
-		} catch (AWTException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		currentZone = new Zone();
-		
-		try {
-			currentZone.readFromFile();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		GraphicsManager.init();
-		
-		//Get this process thread and assign it to th
-		th = new Thread(this);
-		th.start();
-	}
-	
-	
-	/** Set this thread to null */
-	public void stop() {
-		endgame = true;
-	}
-	
-	//TODO : Override
-	public void destroy() {}
-	
-	/**
-	 * Main process thread's instructions
-	 */
-	public void run() {
-		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-		curTime = System.currentTimeMillis();
-		
-		//Call stop() to disable execution.
-		while(!endgame) {
-			tick++;
-			
-			if(first) {
-				ENT_Player.init(5, 5, true);
-			}
-			
-			try {
-				// Add the mouse position to the container element position
-				mousePos = new Point((MouseInfo.getPointerInfo().getLocation().x - this.getLocationOnScreen().x) / scaleMul, (MouseInfo.getPointerInfo().getLocation().y - this.getLocationOnScreen().y) / scaleMul);
-				ControlManager.setMousePos(mousePos.x, mousePos.y);
-			} catch(IllegalComponentStateException e) { /* breathing room */	}
-			
-			if(mousedown) GraphicsManager.createParticleShower();
-			
-			
-			//Tell each manager to set its amount to frame_delay to compensate for lag!
-			ControlManager.setLag(lag);
-			GraphicsManager.setLag(lag);
-			
-			ControlManager.clk(tick);
-			
-			//Refresh graphics
-			refresh();
-			
-
-			//Compute our elapsed time from last frame
-			lag = (int)(System.currentTimeMillis() - curTime);
-			curTime = System.currentTimeMillis();
-			
-			if(first) first = false;
-			
-		
-			//Compute FPS
-			if(System.currentTimeMillis() - frameTime > 1000) {
-				frameTime = System.currentTimeMillis();
-				fps = fps_frame;
-				fps_frame = 0;
-			}
-			
-			try {
-				if(lag < 10)
-				th.sleep(5);
-			} catch (InterruptedException e) {
-			}
-		}
-	}
-	
-	
-	/**
-	 * Initialize this grid
-	 * @param backColor - Color of background
-	 * @param width - in pixels
-	 * @param height - in pixels
-	 */
-	public GameBase(Color backColor, int width, int height) {
-		setBackground(backColor);
-		setPreferredSize(new Dimension(width, height));
-		
-		start();
-	//	timer = new javax.swing.Timer(40, new MoveListener());
-	//	timer.start();
-	}
-	
-	/**OBSOLETE*/
-	public void update(Graphics g) //Called when repaint() is called, this runs before paintComponent().
-	{
-	}
-	
-	
-	/**OBSOLETE*/
-/*	public void paint(Graphics g) {
-		super.paintComponent(g);
-		gameGraphics.draw(g, this);
-		frame++;
-		fps_frame++;
-		gameGraphics.print((Graphics2D)g, "fps: "+fps, 150.0, 100.0, true);
-	} */
-	
-	
-	/**
-	 * Refreshes graphics through GraphicsManager and writes to a buffer, then copies buffer to Window
-	 */
-	public void refresh() {
-		Graphics2D g = null;
-		//Get the graphics of the buffer object for drawing on.
-		g = (Graphics2D)Window.buffer.getDrawGraphics();
-		if(this.getWidth() >= 1024 && this.getHeight() >= 768) 
-			scaleMul = 2; 
-		else 
-			scaleMul = 1;
-		g.scale(scaleMul, scaleMul);
-		//Translate the buffer area to the panel area.
-		g.translate(this.getLocationOnScreen().x - Window.getFrame().getLocationOnScreen().x, this.getLocationOnScreen().y - Window.getFrame().getLocationOnScreen().y);
-		if(GameLogic.inMainMenu()) {
-			GraphicsManager.drawMainMenu((Graphics2D)g);
-		} else {
-			GraphicsManager.drawGameView((Graphics2D)g, this);
-			GraphicsManager.print((Graphics2D)g, "fps: "+fps, 150, 100, true);
-			GraphicsManager.print((Graphics2D)g, "particles: " + GraphicsManager.getParticleCount(), 150, 115, true);
-		}
-		
-		
-		g.dispose();
-		
-		Window.buffer.show();
-		
-		frame++;
-		fps_frame++;
-	}
-
-	/** Called when a key was just pressed */
-	public void keyPressed(KeyEvent e) {
-		ControlManager.keyDown(e);
-	}
-	
-	
-	/** Called when a key was just released */
-	public void keyReleased(KeyEvent e) {
-		ControlManager.keyUp(e);
-	}
-	
-	
-	/** Called when a key is pressed then released */
-	public void keyTyped(KeyEvent e) {}
-	
-	
-	/** Called when the mouse was pressed then released */
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	@Override
-	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-
-	/** Called when the mouse was just pressed */
-	public void mousePressed(MouseEvent e) {
-		mousedown = true;
-		
-	}
-
-	/** Called when the mouse was just released */
-	public void mouseReleased(MouseEvent e) {
-		mousedown = false;
 	}
 }

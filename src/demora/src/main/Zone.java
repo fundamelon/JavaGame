@@ -1,19 +1,29 @@
 package main;
 
-import tiled.core.Map;
-import tiled.io.TMXMapReader;
+import org.newdawn.slick.tiled.*;
 
 public class Zone {
-	private TMXMapReader reader = new TMXMapReader();
-	private Map currentZone;
+	private TiledMap currentZone;
 	
-	public void readFromFile() {
+	public Zone(String path) {
+		readFromFile(path);
+	}
+	
+	public Zone() {
+		readFromFile();
+	}
+	
+	public void readFromFile(String path) {
 		try {
-			currentZone = reader.readMap("lib/map/untitled.tmx");
+			currentZone = new TiledMap(path);
 		} catch (Exception e) {	e.printStackTrace(); }
 	}
 	
-	public Map getData() {
+	public void readFromFile() {
+		readFromFile("lib/map/test.tmx");
+	}
+	
+	public TiledMap getData() {
 		return currentZone;
 	}
 	
@@ -31,5 +41,9 @@ public class Zone {
 	
 	public int getHeightPixels() {
 		return currentZone.getHeight() * currentZone.getTileHeight();
+	}
+	
+	public void render(int x, int y) {
+		currentZone.render(x, y);
 	}
 }

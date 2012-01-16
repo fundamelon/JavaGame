@@ -42,5 +42,5 @@ public interface MapRenderer
      * @param g     the graphics context to paint to
      * @param layer the layer to paint
      */
-    public void paintTileLayer(Graphics2D g, TileLayer layer);
+    public void paintTileLayer(org.newdawn.slick.Graphics g, TileLayer layer);
 }

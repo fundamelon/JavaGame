@@ -1,32 +1,32 @@
 package main.entity;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import org.newdawn.slick.Color;
+import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
+
 import main.ControlManager;
 import main.GameBase;
 import main.GraphicsManager;
 import main.ParticleEmitter;
-import main.Window;
 
-public class Entity_player extends Entity_human {
+public class Entity_player extends Entity_mobile {
 	
-	private BufferedImage PLR_FRONT = null;
-	private BufferedImage PLR_BACK = null;
-	private BufferedImage PLR_LEFT = null;
-	private BufferedImage PLR_RIGHT = null;
+	private Image PLR_FRONT = null;
+	private Image PLR_BACK = null;
+	private Image PLR_LEFT = null;
+	private Image PLR_RIGHT = null;
 	
-	private BufferedImage CUR_IMG = PLR_FRONT;
+	private Image CUR_IMG = PLR_FRONT;
 	
-	private float x, y, z, vel_z;
+	private float vel_z;
 	private int blockSize, dustCount = 0;
 	public ParticleEmitter[] jump_dust = new ParticleEmitter[100];
+	public float moveSpeed = 0.6f;
 	
 	/**
 	 * Initialize the player at a position
@@ -34,21 +34,23 @@ public class Entity_player extends Entity_human {
 	 * @param ny - start pos y
 	 * @param tilewise - True means tiles, false means pixels.
 	 */
+	@Override
 	public void init(int nx, int ny, boolean tilewise) {
-		super.moveSpeed = 120.0f;
 		
-		x = nx * (tilewise ? 1 : Window.getPanelWidth());
-		y = ny * (tilewise ? 1 : Window.getPanelHeight());
+		x = nx * (tilewise ? 1 : GameBase.getWidth());
+		y = ny * (tilewise ? 1 : GameBase.getHeight());
 		
 		try {
-			PLR_FRONT = ImageIO.read(new File("lib/img/char/girl_front_static.jpeg"));
-			PLR_BACK = ImageIO.read(new File("lib/img/char/girl_back_static.jpeg"));
-			PLR_LEFT = ImageIO.read(new File("lib/img/char/girl_left_static.jpeg"));
-			PLR_RIGHT = ImageIO.read(new File("lib/img/char/girl_right_static.jpeg"));
-		} catch (IOException e) {
+			PLR_FRONT = new Image("lib/img/char/girl_front_static.jpeg");
+			PLR_BACK =  new Image("lib/img/char/girl_back_static.jpeg");
+			PLR_LEFT =  new Image("lib/img/char/girl_left_static.jpeg");
+			PLR_RIGHT = new Image("lib/img/char/girl_right_static.jpeg");
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.print("Failed to get player images");
 		}
+		
+		System.out.print("player initialized");
 	}
 	
 	public float getMoveSpeed() {
@@ -61,16 +63,19 @@ public class Entity_player extends Entity_human {
 	 * @param dy - movement difference y
 	 */
 	public void move(float dx, float dy) {
-	//	System.out.println("Player moved locally by "+ dx + ", "+dy);
-		x += dx * ControlManager.getLagComp();
-		y += dy * ControlManager.getLagComp();
+		//skip if you're not gonna move
+		if(dx == 0 && dy == 0) return;
+		
+		System.out.println("Player pos: "+ x + ", "+y);
+		x += dx;
+		y += dy;
 		x = ControlManager.clamp(x, blockSize, GameBase.getZone().getWidth() * 32 - blockSize);
 		y = ControlManager.clamp(y, blockSize, GameBase.getZone().getHeight() * 32 - blockSize);
 		
 		//If player is traveling downward and hits the original start pos then handle that accordingly
 		if(z <= 0 && Math.signum(vel_z) == -1) {
 			if(isJumping()) {
-				GraphicsManager.emitters[dustCount + 500] = new ParticleEmitter((int)x + 16, (int)y + 25, (int)(-vel_z * 0.1) + 5, -vel_z * 7, -vel_z * 1.3f, 0.9f, 0.9f, 1, false, true, new Color(139, 69, 19));
+			//	GraphicsManager.emitters[dustCount + 500] = new ParticleEmitter((int)x + 16, (int)y + 25, (int)(-vel_z * 0.1) + 5, -vel_z * 7, -vel_z * 1.3f, 0.9f, 0.9f, 1, false, true, new Color(139, 69, 19));
 				if(-vel_z > 1500) ControlManager.shake_time = (int)(-vel_z * 0.1);
 				GraphicsManager.emitters[dustCount + 500].setParticleSize(3);
 				if(dustCount < 100) dustCount++; else dustCount = 0;
@@ -79,8 +84,8 @@ public class Entity_player extends Entity_human {
 			z = 0;
 			vel_z = 0;
 		} else {
-			z += vel_z * ControlManager.getLagComp();
-			vel_z -= 1000 * ControlManager.getLagComp();
+	//		z += vel_z * ControlManager.getLagComp();
+	//		vel_z -= 1000 * ControlManager.getLagComp();
 		}
 		
 		//image handler
@@ -128,31 +133,7 @@ public class Entity_player extends Entity_human {
 		return z == 0 ? false : true;
 	}
 	
-	
-	/**
-	 * Draw the entity basic dummy icon and an oval shadow.
-	 * @param g2 - Graphics2D to draw with
-	 */
-	public void draw(Graphics2D g2) {
-		int w = Window.getPanelWidth();
-		int h = Window.getPanelHeight();
-		Color oldColor = g2.getColor();
-		g2.setColor(new Color(0, 0, 0, Math.max(0, 80 - (int)z)));
-		g2.fillOval((int)x + 2, (int)y + 22, 60, 20);
-		g2.setColor(Color.red);
-		float mX = (w/20)/2;	//Adjustments to get the center point.
-		float mY = (h/15)/2;
-		try {
-			g2.drawImage(CUR_IMG, (int)((mX-64)+x), (int)((mY-96)+y-z), 128, 128, null);
-			
-			
-		} catch (Exception e) {
-			System.out.println("Failed to get player icon!");
-		}
-		g2.setColor(oldColor);
-	}
 
-	@Override
 	public void jump() {
 		this.vel_z += 300;
 	}
@@ -165,6 +146,18 @@ public class Entity_player extends Entity_human {
 
 	@Override
 	public void move(double nx, double ny) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void draw() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setImg() {
 		// TODO Auto-generated method stub
 		
 	}

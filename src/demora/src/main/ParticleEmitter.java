@@ -1,6 +1,7 @@
 package main;
 
-import java.awt.*;
+import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Color;
 import java.util.Random;
 
 public class ParticleEmitter {
@@ -121,7 +122,7 @@ public class ParticleEmitter {
 	 * @param g2 - Graphics2D to draw with
 	 * @param delay - frame delay
 	 */
-	public void draw(Graphics2D g2, long delay) {
+	public void render(Graphics g, long delay) {
 		
 		Color oldColor;
 		
@@ -133,19 +134,19 @@ public class ParticleEmitter {
 				
 				//So much casting it ain't even funny.
 				
-				oldColor = g2.getColor();
-				g2.setColor(new Color(particles[i].getRed(), particles[i].getGreen(), particles[i].getBlue(), particles[i].getAlpha()));
+				oldColor = g.getColor();
+				g.setColor(new Color(particles[i].getRed(), particles[i].getGreen(), particles[i].getBlue(), particles[i].getAlpha()));
 				
 				//Update particle position
 				updatePos(i, delay);
 				
 				//Draw a trace line
 				if(trails)
-					g2.drawLine((int)particles[i].getX(), (int)particles[i].getY(), (int)particles[i].getTraceX(), (int)particles[i].getTraceY());
+					g.drawLine((int)particles[i].getX(), (int)particles[i].getY(), (int)particles[i].getTraceX(), (int)particles[i].getTraceY());
 				
 				//Draw the particle
-				g2.fillRect((int)particles[i].getX(), (int)particles[i].getY(), particle_size, particle_size);
-				g2.setColor(oldColor);
+				g.fillRect((int)particles[i].getX(), (int)particles[i].getY(), particle_size, particle_size);
+				g.setColor(oldColor);
 			}
 			
 			//if it loops, create new ones where old ones die

@@ -1,6 +1,6 @@
 package main;
 
-import java.awt.Color;
+import org.newdawn.slick.Color;
 import java.util.Random;
 
 public class Particle {
@@ -120,11 +120,11 @@ public class Particle {
 			trace_x = x;
 			trace_y = y;
 			
-			if(Math.abs(rate_x) > 0.1) rate_x *= dec_x / ControlManager.getLagComp(); else rate_x = 0;
-			if(Math.abs(rate_y) > 0.1) rate_y *= dec_y / ControlManager.getLagComp(); else rate_y = 0;
+			if(Math.abs(rate_x) > 0.1) rate_x *= dec_x / ControlManager.getDelta(); else rate_x = 0;
+			if(Math.abs(rate_y) > 0.1) rate_y *= dec_y / ControlManager.getDelta(); else rate_y = 0;
 			
-			x += rate_x * ControlManager.getLagComp();
-			y += rate_y * ControlManager.getLagComp();
+			x += rate_x * ControlManager.getDelta();
+			y += rate_y * ControlManager.getDelta();
 			
 			
 		} else {

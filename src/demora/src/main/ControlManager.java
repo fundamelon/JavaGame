@@ -1,10 +1,8 @@
 package main;
-import java.awt.Point;
-import java.awt.event.*;
-import java.util.Scanner;
 
-import main.entity.Entity;
-import main.entity.Entity_player;
+import main.entity.*;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 //It seems we don't need this.  We'll see about that later.
 //import javax.swing.Timer;
@@ -21,98 +19,62 @@ public class ControlManager {
 	static boolean[] keys = new boolean[525];
 	static boolean[] keyPressed =  new boolean[keys.length];
 	
-	private static GraphicsManager gameGraphics;
-	public static long tick, lastTick, tickdiff;
-	private static float mousePos_x, mousePos_y;
-	private static int ticks;
 	public static int shake_time = 0;
 	
-	public static int lag;
+	public static int delta;
 	
 	public static Entity currentEntity;
-	public static Entity_player player = GameBase.getPlayerEntity();
 		
+	public static void init() {
+		
+	}
 	
+	public static void update(int newdelta) {
+		delta = newdelta;
+		
+		updatePlayerCtrls();
+	}
+	
+	public static int getDelta() {
+		return delta;
+	}
 
 	/**
 	 * Manually set mouse position
 	 * @param nx - new pos x
 	 * @param ny - new pos y
 	 */
-	public static void setMousePos(float nx, float ny) {
-		mousePos_x = nx;
-		mousePos_y = ny;
-	}
 	
 	
 	/** @return Mouse x position */
 	public static float getMouseX() {
-		return mousePos_x;
+		return Mouse.getX();
 	}
 	
 	
 	/** @return Mouse y position */
 	public static float getMouseY() {
-		return mousePos_y;
-	}
-	
-	
-	/**
-	 * Clock that fires the move method when the timer is triggered.
-	 * @param n - delay since last clock
-	 */
-	public static void clk(long n) {
-		lastTick = tick;
-		tick = n;
-		movePlayerByAmt();	
-		tryJump(player);
-		updateUtilKeys();
-		
-		if(getKeyStatus("H".charAt(0)))
-			GraphicsManager.showHelperText(true);
-		else 
-			GraphicsManager.showHelperText(false);
-		
-		if(getKeyStatus("8".charAt(0)))
-			GraphicsManager.shake();
-		if(shake_time != 0) {
-			GraphicsManager.shake();
-			shake_time -= 1;
-		}
-		
-	}
-	
-	
-	public static void setLag(int n) {
-		lag = n;
-	}
-	
-	public static int getLag() {
-		return lag;
-	}
-	
-	public static float getLagComp() {
-		return lag / 1000.0f;
+		return Mouse.getY();
 	}
 	
 	/**
 	 * Function fired regardless of keys pressed; keys are additively combined
 	 */
-	public static void movePlayerByAmt() {		//Check for keys, send a message to the player.  Instantaneous.
+	public static void updatePlayerCtrls() {
 		//dx and dy are distance x and y respectively - these are sent to the player.
 		float dx=0, dy=0;
 
 		//Get keys pressed.
-		if(keys[KEY_MOVE_NORTH]){
+		if(Keyboard.isKeyDown(Keyboard.KEY_W)){
 			dy = dy - 1;
 		}
-		if(keys[KEY_MOVE_SOUTH]){
+		if(Keyboard.isKeyDown(Keyboard.KEY_S)){
 			dy = dy + 1;
 		}
-		if(keys[KEY_MOVE_EAST]){
+		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
 			dx = dx + 1;
 		}
-		if(keys[KEY_MOVE_WEST]){
+		if(Keyboard.isKeyDown(Keyboard.KEY_A)){
 			dx = dx - 1;
 		}
 
@@ -139,23 +101,15 @@ public class ControlManager {
 		}
 	//	DEBUG: System.out.println("Player asked to move by "+dx+", "+dy);
 		
-		//Slow the player down so that they dont go square root of 2 speed times normal diagonally.
+		//Slow the player down if diagonal
 		if(dx != 0 && dy != 0) {
 			dx *= 0.7;
 			dy *= 0.7;
 		}
-		player.move(dx * player.getMoveSpeed(), dy * player.getMoveSpeed());
+		EntityManager.getPlayer().move(dx * EntityManager.getPlayer().getMoveSpeed() * delta, dy * EntityManager.getPlayer().getMoveSpeed() * delta);
 	
 	}
 	
-	
-	/**
-	 * Set Player's Z velocity upward to simulate a jump
-	 */
-	public static void tryJump(Entity ent) {
-		if(keys[" ".charAt(0)] && !player.isJumping()) 
-			ent.jump();
-	}
 	
 	
 	/**
@@ -169,49 +123,6 @@ public class ControlManager {
 			GraphicsManager.setFade(true);
 	}
 	
-	
-	//Character array of keys pressed.
-	
-	/**
-	 * Called when grid gets a key down event.
-	 * @param kC - Char value of activated key
-	 */
-	public static void keyDown(KeyEvent e) {
-		anyKeysPressed = true;
-		int kC = e.getKeyCode();
-		updateUtilKeys();
-		
-		if(!keys[kC]) {						//Check if they key hasn't been already registered - prevents glitches.
-		//	System.out.println(kC);
-			keys[kC] = true;				//Add the key to a boolean array.
-			if(kC == 27) {
-				if(GameLogic.inMainMenu()) GameLogic.closeMainMenu(); else GameLogic.openMainMenu();
-				GraphicsManager.first_run = true;
-			}
-			
-		}
-	}
-	
-	
-	/**
-	 * Called when grid gets a key up event.
-	 * @param kC - Char value of deactivated key
-	 */
-	public static void keyUp(KeyEvent e) {  
-		// kC is ASCII char code.
-		//Remove the key from the boolean array.
-		int kC = e.getKeyCode();
-		keys[kC] = false;		
-		anyKeysPressed=false;
-		for(int i=0; i<keys.length; i++) {
-			if(keys[i]) {
-				anyKeysPressed = true; 
-				break;
-			}
-		}
-	}
-	
-	//Some backup methods - just in case we need them.
 	
 	/**
 	 * Get key status of selected key char value, 0-500.

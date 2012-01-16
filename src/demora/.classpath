@@ -7,10 +7,9 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="demora/lib/lwjgl-2.8.2/native/windows"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/GTGE/golden_0_2_3.jar"/>
-	<classpathentry kind="lib" path="lib/GTGE/addons/GTGE_add_ons.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl-2.8.2/jar/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl-2.8.2/jar/jinput.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl-2.8.2/jar/lzma.jar"/>
+	<classpathentry kind="lib" path="lib/slick.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

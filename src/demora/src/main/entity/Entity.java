@@ -1,30 +1,22 @@
 package main.entity;
 
-public abstract class Entity {
-	public String type = null, name = null;
-	public String currentImage = "lib/img/girl_front_nobg.png";
-	
-	public int[] itemTable = new int[128];
-	
-	public float moveSpeed;
-	
-	public abstract void jump();
-	
-	public abstract void init();
-	
-	public abstract void move(double nx, double ny);
-	
-	
-	public abstract void damage();
+import org.newdawn.slick.Image;
+import org.newdawn.slick.SlickException;
 
-	public abstract void setAnimation();
+public interface Entity {
+	public void draw();
+
+	public String getName();
+	public String getType();
 	
-	public String getType() {return type;}
-	public String getName() {return name;}
-	public int[] getItemTable() {return itemTable;}
+	public Image getImg();
 	
-	public void giveItem(int nID) {
-		
-	}
+	public void setImg();
 	
+	public float getX();
+	public float getY();
+	
+	public void init();
+
+	void init(int nx, int ny, boolean tilewise);
 }
