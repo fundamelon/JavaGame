@@ -719,6 +719,60 @@ public class Image implements Renderable {
         }
         GL.glTranslatef(-x, -y, 0);
     } 
+    
+    //TODO
+	/**
+	 * Draw this image at a specified location and size
+	 * 
+	 * @param x The x location to draw the image at
+	 * @param y The y location to draw the image at
+	 * @param width The width to render the image at
+	 * @param height The height to render the image at
+	 * @param vshear The amount to shear vertically
+	 * @param hshear The amount to shear horizontally
+	 * @param filter The color to filter with while drawing
+	 */
+    public void draw(float x,float y,float width,float height,float vshear, float hshear, Color filter) { 
+    	if (alpha != 1) {
+    		if (filter == null) {
+    			filter = Color.white;
+    		}
+    		
+    		filter = new Color(filter);
+    		filter.a *= alpha;
+    	}
+        if (filter != null) { 
+            filter.bind(); 
+        } 
+       
+        texture.bind(); 
+        
+        GL.glTranslatef(x, y, 0);
+        if (angle != 0) {
+	        GL.glTranslatef(centerX, centerY, 0.0f); 
+	        GL.glRotatef(angle, 0.0f, 0.0f, 1.0f); 
+	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
+        }
+        
+        GL.glBegin(SGL.GL_QUADS); 		
+		    GL.glTexCoord2f(textureOffsetX, textureOffsetY);
+			GL.glVertex3f(0, 0, 0);
+			GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
+			GL.glVertex3f(hshear, height, 0);
+			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY
+					+ textureHeight);
+			GL.glVertex3f(width + hshear, height + vshear, 0);
+			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
+			GL.glVertex3f(width, vshear, 0);
+        GL.glEnd(); 
+        
+        if (angle != 0) {
+	        GL.glTranslatef(centerX, centerY, 0.0f); 
+	        GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f); 
+	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
+        }
+        GL.glTranslatef(-x, -y, 0);
+    } 
 
 	/**
 	 * Draw this image at a specified location and size as a silohette

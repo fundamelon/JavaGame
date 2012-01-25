@@ -1,6 +1,7 @@
 package main;
 
 import main.entity.Entity;
+import main.entity.EntityManager;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
@@ -59,7 +60,7 @@ public class GameBase {
 			int delta = getDelta();
 
 			update(delta);
-			render(g);
+			render(g, delta);
 
 			Display.update();
 			g.clear();
@@ -195,9 +196,9 @@ public class GameBase {
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 	}
 
-	public static void render(Graphics g) {
+	public static void render(Graphics g, int delta) {
 		g.drawLine(0.0f, 0f, 100f, 100f);
-		GraphicsManager.renderMain(g, getDelta());
+		GraphicsManager.renderMain(g, delta);
 	}
 	
 	public static int getWidth() {

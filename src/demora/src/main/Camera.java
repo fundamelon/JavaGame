@@ -3,6 +3,8 @@ package main;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 
+import main.entity.EntityManager;
+
 public class Camera {
 	public static Point pos = new Point(GameBase.getWidth()/2, GameBase.getHeight()/2);
 	public static float pos_x = pos.x, pos_y = pos.y;
@@ -21,8 +23,8 @@ public class Camera {
 	
 	public static float getX() {return pos_x;}
 	public static float getY() {return pos_y;}
-	public static int getAnchorX() {return (int)(pos_x - GameBase.getWidth()/2);}
-	public static int getAnchorY() {return (int)(pos_y - GameBase.getHeight()/2);}
+	public static float getAnchorX() {return (pos_x - GameBase.getWidth()/2);}
+	public static float getAnchorY() {return (pos_y - GameBase.getHeight()/2);}
 	public static Point getPoint() {return pos;}
 	public static String getString() {return "X: "+pos_x+" Y: "+pos_y;}
 	

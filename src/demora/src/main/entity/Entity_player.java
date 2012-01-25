@@ -8,11 +8,12 @@ import javax.imageio.ImageIO;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.geom.Rectangle;
 
 import main.ControlManager;
 import main.GameBase;
 import main.GraphicsManager;
-import main.ParticleEmitter;
+import main.depreciated.ParticleEmitter;
 
 public class Entity_player extends Entity_mobile {
 	
@@ -28,6 +29,8 @@ public class Entity_player extends Entity_mobile {
 	public ParticleEmitter[] jump_dust = new ParticleEmitter[100];
 	public float moveSpeed = 0.6f;
 	
+	private Rectangle bounds = new Rectangle(0, 0, 36, 36);
+	
 	/**
 	 * Initialize the player at a position
 	 * @param nx - start pos x
@@ -39,12 +42,14 @@ public class Entity_player extends Entity_mobile {
 		
 		x = nx * (tilewise ? 1 : GameBase.getWidth());
 		y = ny * (tilewise ? 1 : GameBase.getHeight());
+		updateBounds();
 		
 		try {
-			PLR_FRONT = new Image("lib/img/char/girl_front_static.jpeg");
-			PLR_BACK =  new Image("lib/img/char/girl_back_static.jpeg");
-			PLR_LEFT =  new Image("lib/img/char/girl_left_static.jpeg");
-			PLR_RIGHT = new Image("lib/img/char/girl_right_static.jpeg");
+			PLR_FRONT = new Image("lib/img/char/girl_front_static.png");
+			PLR_BACK =  new Image("lib/img/char/girl_back_static.png");
+			PLR_LEFT =  new Image("lib/img/char/girl_left_static.png");
+			PLR_RIGHT = new Image("lib/img/char/girl_right_static.png");
+			CUR_IMG = PLR_FRONT;
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.print("Failed to get player images");
@@ -66,11 +71,11 @@ public class Entity_player extends Entity_mobile {
 		//skip if you're not gonna move
 		if(dx == 0 && dy == 0) return;
 		
-		System.out.println("Player pos: "+ x + ", "+y);
+	//	System.out.println("Player pos: "+ x + ", "+y);
 		x += dx;
 		y += dy;
-		x = ControlManager.clamp(x, blockSize, GameBase.getZone().getWidth() * 32 - blockSize);
-		y = ControlManager.clamp(y, blockSize, GameBase.getZone().getHeight() * 32 - blockSize);
+		x = ControlManager.clamp(x, 18, GameBase.getZone().getWidth() * 32 + blockSize + 18);
+		y = ControlManager.clamp(y, 18, GameBase.getZone().getHeight() * 32 + blockSize - 18);
 		
 		//If player is traveling downward and hits the original start pos then handle that accordingly
 		if(z <= 0 && Math.signum(vel_z) == -1) {
@@ -99,6 +104,7 @@ public class Entity_player extends Entity_mobile {
 			else
 				CUR_IMG = PLR_FRONT;
 				
+		updateBounds();
 	}
 	
 	
@@ -107,6 +113,11 @@ public class Entity_player extends Entity_mobile {
 	}
 	public float getY() {
 		return y;
+	}
+	
+	private void updateBounds() {
+		bounds.setX(x - 18);
+		bounds.setY(y + 18);
 	}
 	
 	public float getZ() {return z;}
@@ -160,5 +171,28 @@ public class Entity_player extends Entity_mobile {
 	public void setImg() {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	@Override
+	public Image getImg() {
+		return CUR_IMG;
+	}
+	
+	public Image getShadowCasterImg() {
+		if(CUR_IMG.equals(PLR_FRONT))
+			return PLR_BACK;
+		else if(CUR_IMG.equals(PLR_BACK))
+			return PLR_FRONT;
+		else return CUR_IMG;
+	}
+
+	public Rectangle getBounds() {
+		return bounds;
+	}
+
+	@Override
+	public float getAng() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

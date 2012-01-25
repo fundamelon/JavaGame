@@ -2,6 +2,7 @@ package main.entity;
 
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.geom.Rectangle;
 
 public interface Entity {
 	public void draw();
@@ -9,12 +10,16 @@ public interface Entity {
 	public String getName();
 	public String getType();
 	
+	public Rectangle getBounds();
+	
 	public Image getImg();
+	public Image getShadowCasterImg();
 	
 	public void setImg();
 	
 	public float getX();
 	public float getY();
+	public float getAng();
 	
 	public void init();
 

@@ -1,15 +1,16 @@
 package main;
 
-
-import javax.imageio.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.*;
 
-import tiled.core.Map;
-import tiled.core.TileLayer;
-
+import main.depreciated.ParticleEmitter;
 import main.entity.Entity;
+import main.entity.EntityManager;
+import main.particles.*;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -19,28 +20,25 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.opengl.Texture;
+import org.newdawn.slick.particles.ParticleSystem;
 
 public class GraphicsManager {
 	
 	static Image[] texture;
 	static GameBase panel;
-	private static Random rand = new Random();
 	public static ParticleEmitter emitters[] = new ParticleEmitter[1000];
 	public static ParticleEmitter emitter_dump[] = new ParticleEmitter[emitters.length];
+	public static org.newdawn.slick.particles.ParticleEmitter fire_effect;
+	public static org.newdawn.slick.particles.ParticleSystem particle_system;
 	private static int sparkct = 0, particle_count = 0;
-	private static long ticks = 0;
-	private static Image camIcon, dbImage;
 	private static int fps_lag;
 	public static boolean first_run = true;
 	
 	private static Color fadeCol = new Color(0, 0, 0);
 	private static Color overlayCol = new Color(fadeCol.getRed(), fadeCol.getGreen(), fadeCol.getBlue(), 0);
 	//Vars with preceding underscore are to be values for render options.  :O
-	private static boolean _dither = false, fadeMode = true, helperText = false, shake = false;
-	
-	private static int lag;
-	
-	private static Image bg_blurred;
+	private static boolean fadeMode = true, helperText = false, shake = false;
 	
 	/**
 	 * Initializes the object and loads images.
@@ -51,13 +49,17 @@ public class GraphicsManager {
 		
 		//Empty for now.  We'll see about it later.
 		texture = new Image[10];
-		camIcon = texture[0];
 		
+		try {
+			particle_system = new ParticleSystem(new Image("lib/img/particle/smoke_01.tga"));
+		//	particle_system = new ParticleSystem(new Image("src/org/newdawn/slick/data/particle.tga"));
+		//	particle_system = new ParticleSystem(new Image("lib/img/Angry_Birds_promo_art.png"));
+		} catch (SlickException e) {
+			e.printStackTrace();
+		}
+
+		particle_system.setBlendingMode(1);
 		
-	}
-	
-	public static void setLag(int n) {
-		lag = n;
 	}
 	
 	
@@ -69,49 +71,77 @@ public class GraphicsManager {
 	 */
 	public static void renderMain(Graphics g, int delta) {
 		Color oldCol;
+		oldCol = g.getColor();
+		g.setColor(Color.white);
 		
+		int width = GameBase.getWidth();
+		int height = GameBase.getHeight();
 
+		Camera.followPlayer();
+		
 		renderMap(g);
 		//Set the camera to follow the player with the players coordinates, then update the camera.
-		Camera.followPlayer();
-		Camera.moveToPos(EntityManager.getPlayer().getX() + 16, EntityManager.getPlayer().getY() + 16, 1); 
-		Camera.update();
 
+		Camera.update();
+		Camera.moveToPos(EntityManager.getPlayer().getX(), EntityManager.getPlayer().getY(), 1); 
+		
 		g.translate(-Camera.getAnchorX(), -Camera.getAnchorY());
 		
-//		
-//		//DEBUG: Next draw a square representing the tile the player is currently on.
-		oldCol = g.getColor();
-		g.setColor(new Color(0, 0, 255, 50));
-	//	g2.fillRect((int)Math.round(Player.getX() / 32) * 32, (int)Math.round(Player.getY() / 32) * 32, 32, 32);
-		g.setColor(oldCol);
-//		
-//		
-//		
-//		//Effects are drawn last along with the camera center point icon.
-//		renderEffects(g);
+		
+		renderEffects(g);
 		renderEntities(g);
-//		renderFrontEffects(g);
-//	//	g2.drawImage(camIcon, (int)Camera.getX() - 7, (int)Camera.getY() - 3, null);
-//
-//		//This will update the fade amount then apply a dark box to the entire viewport based on the fade value.
-//		oldCol = g.getColor();
-//		fade();
-//		g.setColor(overlayCol);
-//		g.fillRect((int)toLocalX(0), (int)toLocalY(0), (int)toLocalX(GameBase.getWidth()), (int)toLocalY(GameBase.getHeight()));
-//		g.setColor(oldCol);
-//		
-//		//Draw helper text menu if it's called upon.
-//		if(helperText) {
-//			//TODO: Find a better way to do the line breaks.
-//			g.drawString("TEST CONTROLS", 50, 50);
-//			g.drawString("R: Randomize texture seed", 50, 65);
-//			g.drawString("0: Fade out", 50, 80);
-//			g.drawString("9: Fade in", 50, 95);
-//			g.drawString("8: Shake camera", 50, 110);
-//		}
-//		first_run = false;
+		
+		particle_system.render();
+		
 		g.translate(Camera.getAnchorX(), Camera.getAnchorY());
+		
+		
+		if(ControlManager.isMouseButtonDown(0)) {
+			g.setColor(Color.white);
+			float[] xArr = ControlManager.getMouseTraceXArr();
+			float[] yArr = ControlManager.getMouseTraceYArr();
+			for(int i = 0; i < ControlManager.getMouseTraceLength()-1; i++) {
+				if(xArr[i+1] != 0)
+					g.drawLine(xArr[i], GameBase.getHeight() - yArr[i], xArr[i+1], GameBase.getHeight() - yArr[i+1]);
+			}
+			g.setColor(Color.red);
+			
+			if(particle_system.getEmitterCount() == 0)
+				for(int i = 0; i < 5; i++) 
+					particle_system.addEmitter(new Emitter_FireMed());
+			
+		} else {
+			if(particle_system.getEmitterCount() != 0)
+				particle_system.removeAllEmitters();
+		}
+		g.drawRect(ControlManager.getMouseX() - 16,  ControlManager.getMouseY() - 16, 32, 32);
+		
+		g.setColor(oldCol);
+		
+		for(int i = 0; i < particle_system.getEmitterCount(); i++)
+			particle_system.getEmitter(i).setPos(toLocalX(ControlManager.getMouseX()), toLocalY(ControlManager.getMouseY()));
+		
+		particle_system.update(delta);
+		
+		if(Keyboard.isKeyDown(Keyboard.KEY_F2) && !Keyboard.isRepeatEvent()) {
+			
+			ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
+			GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer );
+			
+			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			 
+			for(int x = 0; x < width; x++)
+				for(int y = 0; y < height; y++)
+				{
+					int i = (x + (width * y)) * 4;
+					int r = buffer.get(i) & 0xFF;
+					int g1 = buffer.get(i + 1) & 0xFF;
+					int b = buffer.get(i + 2) & 0xFF;
+					image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g1 << 8) | b);
+				}
+			
+			System.out.println("Saved screenshot");
+		}
 	}
 	
 	public static void renderMainMenu(Graphics g) {
@@ -157,38 +187,40 @@ public class GraphicsManager {
 			sparkct = 0;
 		else
 			sparkct++;
-		emitters[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 100, 100, 100, 0.05f, 0.05f, 2, false, false, Color.yellow);
-		emitters[sparkct].setParticleSize(0);
-		emitters[sparkct].setTrails(true);
-	//	emitters[sparkct].toggleModifier(0);
-	//	emitters[sparkct].toggleModifier(3);
+		emitters[sparkct] = new ParticleEmitter(100, (int)toLocalX(x), (int)toLocalY(y));
+		emitters[sparkct].setSize(5);
+		
+		
 		if(sparkct == emitters.length-1) 
 			sparkct = 0;
 		else
 			sparkct++;
-		emitters[sparkct] = new ParticleEmitter((int)toLocalX(x), (int)toLocalY(y), 0, 5, 5, 0.9f, 0.9f, 0.1f, false, false, Color.gray);
 	}
 	
 	
 	public static void renderEntities(Graphics g) {
-		for(int i = 0; i < EntityManager.getTableLength(); i++) {
-			Entity curEnt = EntityManager.getEntByIndex(i);
-			g.drawImage(curEnt.getImg(), curEnt.getX(), curEnt.getY());
+		for(int i = 0; i < EntityManager.getTableLength("mobile"); i++) {
+			Entity curEnt = EntityManager.getByIndex(i, "mobile");
+			g.draw(curEnt.getBounds());
+			
+			Image shadow = curEnt.getShadowCasterImg();		
+			g.pushTransform();
+			
+			float x = curEnt.getX() - shadow.getWidth()/2, y = curEnt.getY() - shadow.getHeight()/2;
+			
+			g.scale(1, -0.4f);
+			shadow.setAlpha(0.5f);
+			shadow.draw(x-33, -y/0.4f - 370, shadow.getWidth(), shadow.getHeight(), 0, 40, Color.black);
+			g.popTransform();
+			shadow.setAlpha(1);
+			g.drawImage(curEnt.getImg(), curEnt.getX() - curEnt.getImg().getWidth()/2, curEnt.getY() - curEnt.getImg().getHeight()/2);
 		}
 	}
 	
 	
 	public static void renderMap(Graphics g) {
-		GameBase.getZone().render(-Camera.getAnchorX(), -Camera.getAnchorY());
+		GameBase.getZone().render(-(int)Camera.getAnchorX(), -(int)Camera.getAnchorY());
 	}
-	
-	
-	
-	/**
-	 * Draw the tile textures used on the background. OBSOLETE + REMOVED
-	 * @param g2 - Graphics2D context
-	 */
-	public static void renderBackground(Graphics g) {}
 	
 	
 	/**
@@ -213,22 +245,7 @@ public class GraphicsManager {
 	public static void renderEffects(Graphics g) {
 		for(int i = 0; i < emitters.length; i++) {
 			if(emitters[i] != null) 
-				if(emitters[i].getY() < EntityManager.getPlayer().getY() + EntityManager.getPlayer().getZ() + 32)
-					emitters[i].render(g, ticks);
-				else
-					emitter_dump[i] = emitters[i];
-		}
-	}
-	
-	/**
-	 * Update particles on the second render list; rendered after player
-	 * @param g2 - Graphics2D context
-	 */
-	public static void renderFrontEffects(Graphics g) {
-		for(int i = 0; i < emitter_dump.length; i++) {
-			if(emitter_dump[i] != null) 
-				emitter_dump[i].render(g, ticks);
-			emitter_dump[i] = null;
+				emitters[i].render(g, GameBase.getDelta());
 		}
 	}
 	
@@ -329,5 +346,13 @@ public class GraphicsManager {
 	 */
 	public static float toLocalY(float oy) {
 		return oy + Camera.getAnchorY();
+	}
+	
+	public static float toWorldX(float ox) {
+		return ox - Camera.getAnchorX();
+	}
+	
+	public static float toWorldY(float oy) {
+		return oy - Camera.getAnchorY();
 	}
 }

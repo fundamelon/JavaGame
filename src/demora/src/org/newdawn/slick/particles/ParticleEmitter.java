@@ -18,6 +18,8 @@ public interface ParticleEmitter {
 	 * @param delta The amount of time in milliseconds since last emitter update
 	 */
 	public void update(ParticleSystem system, int delta);
+	
+	public void setPos(float x, float y);
 
 	/**
 	 * Check if this emitter has completed it's cycle

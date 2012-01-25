@@ -28,6 +28,7 @@ public class ParticleSystem {
 	/** The renderer to use for all GL operations */
 	protected static SGL GL = Renderer.get();
 	
+	
 	/** The blending mode for the glowy style */
 	public static final int BLEND_ADDITIVE = 1;
 	/** The blending mode for the normal style */

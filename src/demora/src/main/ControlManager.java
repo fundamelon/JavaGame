@@ -1,6 +1,7 @@
 package main;
 
 import main.entity.*;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -19,6 +20,12 @@ public class ControlManager {
 	static boolean[] keys = new boolean[525];
 	static boolean[] keyPressed =  new boolean[keys.length];
 	
+	private static float[] mouseTraceX = new float[64];
+	private static float[] mouseTraceY = new float[64];
+	private static int traceCount;
+	
+	private static int mousePrevX = 0, mousePrevY = 0, mouseDX, mouseDY;
+	
 	public static int shake_time = 0;
 	
 	public static int delta;
@@ -26,13 +33,36 @@ public class ControlManager {
 	public static Entity currentEntity;
 		
 	public static void init() {
-		
+		traceCount = 0;
 	}
 	
 	public static void update(int newdelta) {
 		delta = newdelta;
 		
 		updatePlayerCtrls();
+		if(Mouse.isButtonDown(0))
+		{
+		//	GraphicsManager.createParticleShower();
+			mouseTraceX[traceCount] = Mouse.getX();
+			mouseTraceY[traceCount] = Mouse.getY();
+			if(traceCount < mouseTraceX.length-1) traceCount++; else traceCount = 0;
+		} else for(int i = mouseTraceX.length-1; i >1; i--) {
+			mouseTraceX[i] = 0;
+		}
+		
+		mouseDX = Mouse.getDX();
+		mouseDY = Mouse.getDY();
+		
+	}
+	
+	public static float[] getMouseTraceXArr() {
+		return mouseTraceX;
+	}
+	public static float[] getMouseTraceYArr() {
+		return mouseTraceY;
+	}
+	public static int getMouseTraceLength() {
+		return traceCount;
 	}
 	
 	public static int getDelta() {
@@ -47,14 +77,22 @@ public class ControlManager {
 	
 	
 	/** @return Mouse x position */
-	public static float getMouseX() {
+	public static int getMouseX() {
 		return Mouse.getX();
 	}
 	
 	
 	/** @return Mouse y position */
-	public static float getMouseY() {
-		return Mouse.getY();
+	public static int getMouseY() {
+		return GameBase.getHeight() - Mouse.getY();
+	}
+	
+	public static int getMouseDX() {
+		return mouseDX;
+	}
+	
+	public static int getMouseDY() {
+		return mouseDY;
 	}
 	
 	/**
@@ -133,6 +171,9 @@ public class ControlManager {
 		return keys[kC];
 	}
 	
+	public static boolean isMouseButtonDown(int i) {
+		return Mouse.isButtonDown(i);
+	}
 	
 	
 	public static void setKeyStatus(int kC, boolean newState) {

@@ -1,13 +1,17 @@
 package main.entity;
 
+import org.newdawn.slick.Animation;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.geom.Rectangle;
 
 
 public abstract class Entity_mobile implements Entity{
-	public float moveSpeed, x, y, z;
+	public float moveSpeed, x, y, z, ang;
 	public String type = null, name = null;
 	public String currentImage = "lib/img/girl_front_nobg.png";
+	private Rectangle bounds;
+	private Animation[] anims;
 	
 	public void setAnimation() {}
 	

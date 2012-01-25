@@ -871,4 +871,10 @@ public class ConfigurableEmitter implements ParticleEmitter {
 	public void resetState() {
 		replay();
 	}
+
+	@Override
+	public void setPos(float x, float y) {
+		// TODO Auto-generated method stub
+		
+	}
 }
