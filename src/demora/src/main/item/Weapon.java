@@ -1,6 +1,7 @@
 package main.item;
 
 import org.newdawn.slick.Image;
+import org.newdawn.slick.geom.Rectangle;
 
 public class Weapon extends Item {
 
@@ -79,6 +80,24 @@ public class Weapon extends Item {
 	public void init(int nx, int ny, boolean tilewise) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public Rectangle getBounds() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Image getShadowCasterImg() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public float getAng() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

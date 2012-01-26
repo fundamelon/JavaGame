@@ -70,22 +70,16 @@ public class EntityManager {
 	
 	private static ArrayList<Entity> getSet(String name) {
 		ArrayList<Entity> table;
-		switch(name) {
-		case "mobile":
+		if(name == "mobile")
 			table = mobile_ents;
-			break;
-		case "item":
+		else if (name == "item")
 			table = item_ents;
-			break;
-		case "environment":
+		else if (name == "environment")
 			table = env_ents;
-			break;
-		case "tile":
+		else if (name == "tile")
 			table = tile_ents;
-			break;
-		default:
+		else
 			table = mobile_ents;
-		}
 		return table;
 	}
 	
@@ -93,6 +87,12 @@ public class EntityManager {
 		ArrayList<Entity> ent_list = getSet(setname);
 		for(int i = 0; i < ent_list.size(); i++) {
 			ent_list.get(i).draw();
+		}
+	}
+	
+	public static void update() {
+		for(int i = 0; i < mobile_ents.size(); i++) {
+			
 		}
 	}
 	

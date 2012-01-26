@@ -1,16 +1,31 @@
 package main;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+
 import main.entity.Entity;
 import main.entity.EntityManager;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.ARBFragmentShader;
+import org.lwjgl.opengl.ARBShaderObjects;
+import org.lwjgl.opengl.ARBVertexShader;
+import org.lwjgl.opengl.Util;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 
 import org.newdawn.slick.Graphics;
+
+import Dario.*;
 
 public class GameBase {
 	
@@ -31,6 +46,7 @@ public class GameBase {
 	
 	static boolean vsync;
 
+	private static Shader shader;
 	
 	public static void main(String[] args) {
 		GameBase.start();
@@ -52,7 +68,11 @@ public class GameBase {
 		ControlManager.init();
 		EntityManager.init();
 
-		initGL(); // init OpenGL
+		initGL();
+		
+		shader = new Shader("src/shader/screen.vert", "src/shader/screen.frag");
+		
+		
 		getDelta(); // call once before loop to initialise lastFrame
 		lastFPS = getTime(); // call before loop to initialise fps timer
 
@@ -191,14 +211,20 @@ public class GameBase {
 		GL11.glOrtho(0, 800, 600, 0, 1, -1);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
+		
 		//Fix transparent pixels being black
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+	//	GL11.glEnable(GL11.GL_BLEND);
+	//	GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 	}
-
-	public static void render(Graphics g, int delta) {
+	
+	public static void render(Graphics g, int delta) {	
+	//	shader.activate();
+		
+        g.setDrawMode(Graphics.MODE_NORMAL);
 		g.drawLine(0.0f, 0f, 100f, 100f);
 		GraphicsManager.renderMain(g, delta);
+
+		shader.deactivate();
 	}
 	
 	public static int getWidth() {
@@ -210,7 +236,25 @@ public class GameBase {
 	}
 	
 	
+	private static ByteBuffer toByteString(String str, boolean isNullTerminated) {
+        int length = str.length();
+        if (isNullTerminated) {
+            length++;
+        }
+        ByteBuffer buff = BufferUtils.createByteBuffer(length);
+        buff.put(str.getBytes());
+
+        if (isNullTerminated) {
+            buff.put((byte) 0);
+        }
+
+        buff.flip();
+        return buff;
+    }
 	
+	private static ByteBuffer toByteString(String str) {
+		return toByteString(str, true);
+	}
 	
 	public static void loadZone(Zone newZone) {
 		currentZone = newZone;
@@ -219,4 +263,66 @@ public class GameBase {
 	public static Zone getZone() {
 		return currentZone;
 	}
+	
+//	
+//	private static int createVertShader(String filename) {
+//		vertShader = ARBShaderObjects.glCreateShaderObjectARB(ARBVertexShader.GL_VERTEX_SHADER_ARB);
+//		if(vertShader == 0) {return 0;}
+//		String vertexCode = "";
+//		String line;
+//		try {
+//			BufferedReader reader = new BufferedReader(new FileReader(filename));
+//			while((line = reader.readLine()) != null) {
+//				vertexCode += line + "\n";
+//			}
+//		} catch(Exception e) {
+//			System.out.println("Vertex shader read failed");
+//			e.printStackTrace();
+//			return 0;
+//		}
+//		
+//		ARBShaderObjects.glShaderSourceARB(vertShader, vertexCode);
+//		ARBShaderObjects.glCompileShaderARB(vertShader);
+//		
+//		return vertShader;
+//	}
+//	
+//	private static int createFragShader(String filename) {
+//		fragShader = ARBShaderObjects.glCreateShaderObjectARB(ARBFragmentShader.GL_FRAGMENT_SHADER_ARB);
+//		if(fragShader == 0) {return 0;}
+//		String fragCode = "";
+//		String line;
+//		
+//		try {
+//			BufferedReader reader = new BufferedReader(new FileReader(filename));
+//			while((line=reader.readLine()) != null) {
+//				fragCode += line + "\n";
+//			}
+//		} catch(Exception e) {
+//			System.out.println("Fragment shader read failed");
+//			e.printStackTrace();
+//			return 0;
+//		}
+//		ARBShaderObjects.glShaderSourceARB(fragShader, fragCode);
+//		ARBShaderObjects.glCompileShaderARB(fragShader);
+//		
+//		return fragShader;
+//	}
+//	
+//	private static boolean printLogInfo(int obj) {
+//		IntBuffer iVal = BufferUtils.createIntBuffer(1);
+//		ARBShaderObjects.glGetObjectParameterARB(obj,  ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB, iVal);
+//		
+//		int length = iVal.get();
+//		if(length > 1) {
+//			ByteBuffer infoLog = BufferUtils.createByteBuffer(length);
+//			iVal.flip();
+//			ARBShaderObjects.glGetInfoLogARB(obj, iVal, infoLog);
+//			byte[] infoBytes = new byte[length];
+//			infoLog.get(infoBytes);
+//			String out = new String(infoBytes);
+//			System.out.println("Info log:\n"+out);
+//		} else return true;
+//		return false;
+//	}
 }

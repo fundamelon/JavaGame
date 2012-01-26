@@ -14,6 +14,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.*;
 
 import org.newdawn.slick.Graphics;
@@ -51,7 +52,7 @@ public class GraphicsManager {
 		texture = new Image[10];
 		
 		try {
-			particle_system = new ParticleSystem(new Image("lib/img/particle/smoke_01.tga"));
+			particle_system = new ParticleSystem(new Image("lib/img/particle/flamelrg_02.tga"));
 		//	particle_system = new ParticleSystem(new Image("src/org/newdawn/slick/data/particle.tga"));
 		//	particle_system = new ParticleSystem(new Image("lib/img/Angry_Birds_promo_art.png"));
 		} catch (SlickException e) {
@@ -108,13 +109,13 @@ public class GraphicsManager {
 			
 			if(particle_system.getEmitterCount() == 0)
 				for(int i = 0; i < 5; i++) 
-					particle_system.addEmitter(new Emitter_FireMed());
+					particle_system.addEmitter(new Emitter_FireLarge());
 			
-		} else {
-			if(particle_system.getEmitterCount() != 0)
-				particle_system.removeAllEmitters();
 		}
-		g.drawRect(ControlManager.getMouseX() - 16,  ControlManager.getMouseY() - 16, 32, 32);
+		else if(particle_system.getEmitterCount() != 0)
+				particle_system.removeAllEmitters();
+		
+		g.drawRect(ControlManager.getMouseX() - 8,  ControlManager.getMouseY() - 8, 16, 16);
 		
 		g.setColor(oldCol);
 		
@@ -209,11 +210,11 @@ public class GraphicsManager {
 			float x = curEnt.getX() - shadow.getWidth()/2, y = curEnt.getY() - shadow.getHeight()/2;
 			
 			g.scale(1, -0.4f);
-			shadow.setAlpha(0.5f);
+			shadow.setAlpha(0.3f);
 			shadow.draw(x-33, -y/0.4f - 370, shadow.getWidth(), shadow.getHeight(), 0, 40, Color.black);
 			g.popTransform();
 			shadow.setAlpha(1);
-			g.drawImage(curEnt.getImg(), curEnt.getX() - curEnt.getImg().getWidth()/2, curEnt.getY() - curEnt.getImg().getHeight()/2);
+			g.drawImage(curEnt.getImg(), x, y);
 		}
 	}
 	

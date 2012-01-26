@@ -75,7 +75,6 @@ public class ControlManager {
 	 * @param ny - new pos y
 	 */
 	
-	
 	/** @return Mouse x position */
 	public static int getMouseX() {
 		return Mouse.getX();
