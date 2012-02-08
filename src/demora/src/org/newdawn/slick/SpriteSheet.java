@@ -252,6 +252,10 @@ public class SpriteSheet extends Image {
 	public void renderInUse(int x,int y,int sx,int sy) {
 		subImages[sx][sy].drawEmbedded(x, y, tw, th);
 	}
+	
+	public void renderInUseShaded(int x,int y,int sx,int sy) {
+		subImages[sx][sy].drawEmbeddedShaded(x, y, tw, th);
+	}
 
 	/**
 	 * @see org.newdawn.slick.Image#endUse()

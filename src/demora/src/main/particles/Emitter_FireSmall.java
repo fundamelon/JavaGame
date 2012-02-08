@@ -19,7 +19,6 @@ public class Emitter_FireSmall implements ParticleEmitter {
 	
 	/** Timer controlling particle variation */
 	private int variation_timer = 0;
-	
 	/**
 	 * Create a default fire effect at 0,0
 	 */
@@ -65,7 +64,6 @@ public class Emitter_FireSmall implements ParticleEmitter {
 			float vx = (float) (-0.005f + (Math.random() * 0.01f)) + (float)Math.sin(variation_timer * 0.0003 + Math.sin(variation_timer*0.001))*0.01f;
 			float vy = (float) (-(Math.random() * 0.05f));
 			
-			vx += ControlManager.getMouseDX() * 1000;
 			
 			p.setVelocity(vx, vy, 1.1f);
 		}
@@ -147,5 +145,10 @@ public class Emitter_FireSmall implements ParticleEmitter {
 	 * @see org.newdawn.slick.particles.ParticleEmitter#resetState()
 	 */
 	public void resetState() {
+	}
+
+	@Override
+	public float getBrightness() {
+		return 0.4f + (float)((Math.sin(variation_timer * 0.003f) + Math.cos(variation_timer * 0.01f)) * 0.01f);
 	}
 }

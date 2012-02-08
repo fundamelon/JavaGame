@@ -5,9 +5,11 @@ void main(void)
 
   vec4 color = texture2D(tex, gl_TexCoord[0].st);
 
-  color.r = 1 - color.r;
-  color.g = 1 - color.g;
-  color.b = 1 - color.b;
+  float colore = 0.9;
 
-  gl_FragColor = color;
+  color.r = colore;
+  color.g = colore;
+  color.b = colore;
+
+ // gl_FragColor = color;
 }

@@ -1,5 +1,10 @@
 package main;
 
+import java.util.ArrayList;
+
+import main.pathfinding.NodeMap;
+
+import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.tiled.*;
 
 public class Zone {
@@ -21,6 +26,10 @@ public class Zone {
 	
 	public void readFromFile() {
 		readFromFile("lib/map/test.tmx");
+	}
+	
+	public void init() {
+		ArrayList torchPositions;
 	}
 	
 	public TiledMap getData() {
@@ -45,5 +54,30 @@ public class Zone {
 	
 	public void render(int x, int y) {
 		currentZone.render(x, y);
+	}
+	
+	public int getTileAtX(float ox) {
+		return (int)Math.floor(ox / currentZone.getTileWidth());
+	}
+	
+	public int getTileAtY(float oy) {
+		return (int)Math.floor(oy / currentZone.getTileHeight());
+	}
+	
+	public Rectangle[] buildCollisionArray() {
+		Rectangle[] outArray = new Rectangle[getWidth() * getHeight()];
+		for(int x = 0; x < getWidth(); x++) {
+			for(int y = 0; y < getHeight(); y++) {
+				if(blocked(x, y)) {
+					outArray[y*getWidth() + x] = new Rectangle(x*32, y*32, 32, 32);
+				//	System.out.println(y*getWidth() + x);
+				}
+			}
+		}
+		return outArray;
+	}
+	
+	public boolean blocked(int x, int y) {
+		return 1 == Integer.parseInt(getData().getTileProperty(getData().getTileId(x, y, GameBase.getZone().getData().getLayerIndex("util")), "collision", "0"));
 	}
 }

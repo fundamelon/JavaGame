@@ -65,7 +65,6 @@ public class Emitter_FireLarge implements ParticleEmitter {
 			float vx = (float) (-0.02f + (Math.random() * 0.04f)) + (float)Math.sin(variation_timer * 0.0003 + Math.sin(variation_timer*0.001))*0.01f;
 			float vy = (float) (-(Math.random() * 0.15f));
 			
-			vx += ControlManager.getMouseDX() * 1000;
 			
 			p.setVelocity(vx, vy, 1.1f);
 		}
@@ -147,5 +146,11 @@ public class Emitter_FireLarge implements ParticleEmitter {
 	 * @see org.newdawn.slick.particles.ParticleEmitter#resetState()
 	 */
 	public void resetState() {
+	}
+
+	@Override
+	public float getBrightness() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

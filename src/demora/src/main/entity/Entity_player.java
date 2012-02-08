@@ -5,34 +5,77 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import org.newdawn.slick.Animation;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
-import main.ControlManager;
-import main.GameBase;
-import main.GraphicsManager;
-import main.depreciated.ParticleEmitter;
+
+import main.*;
 
 public class Entity_player extends Entity_mobile {
 	
-	private Image PLR_FRONT = null;
-	private Image PLR_BACK = null;
-	private Image PLR_LEFT = null;
-	private Image PLR_RIGHT = null;
+	private final Image TEX_PLR_FRONT;
+	private final Image TEX_PLR_BACK;
+	private final Image TEX_PLR_LEFT;
+	private final Image TEX_PLR_RIGHT;
 	
-	private Image CUR_IMG = PLR_FRONT;
+	private final Image[] TEX_PLR_RUN_FRONT;
+	private final Image[] TEX_PLR_RUN_SIDE;
+	
+	private final Animation ANIM_PLR_RUN_FRONT;
+	private final Animation ANIM_PLR_RUN_LEFT;
+	private final Animation ANIM_PLR_RUN_RIGHT;
+	
+	private Image cur_img = null;
+	private Animation cur_anim = null;
+	
+	private boolean flipCurImg = false;
 	
 	private float vel_z;
 	private int blockSize, dustCount = 0;
-	public ParticleEmitter[] jump_dust = new ParticleEmitter[100];
 	public float moveSpeed = 0.6f;
 	
-	private Rectangle bounds = new Rectangle(0, 0, 36, 36);
+	private boolean isMoving = false;
+	private boolean isColliding = false;
+	
+	private String action = "idle", direction = "front";
+	
+	private Rectangle bounds = new Rectangle(0, 0, 32, 32);
+	
+	public Entity_player() throws SlickException {
+	
+		TEX_PLR_FRONT = new Image("lib/img/char/girl_front_static.png");
+		TEX_PLR_BACK =  new Image("lib/img/char/girl_back_static.png");
+		TEX_PLR_LEFT =  new Image("lib/img/char/girl_left_static.png");
+		TEX_PLR_RIGHT = new Image("lib/img/char/girl_right_static.png");
+		
+		TEX_PLR_RUN_FRONT = new Image[] {
+			new Image("lib/img/char/girl_front_run02.png"),
+			new Image("lib/img/char/girl_front_run01.png"),
+			new Image("lib/img/char/girl_front_run03.png")
+		};
+		
+		TEX_PLR_RUN_SIDE = new Image[] {
+			new Image("lib/img/char/girl_side_run01.png"),
+			new Image("lib/img/char/girl_side_run02.png"),
+			new Image("lib/img/char/girl_side_run03.png"),
+			new Image("lib/img/char/girl_side_run04.png")
+		};
+		
+		ANIM_PLR_RUN_FRONT = new Animation(TEX_PLR_RUN_FRONT, new int[] {150, 70, 150}, true);
+		ANIM_PLR_RUN_LEFT = new Animation(TEX_PLR_RUN_SIDE, new int[] {70, 150, 70, 150}, true);
+		ANIM_PLR_RUN_RIGHT = new Animation(TEX_PLR_RUN_SIDE, new int[] {70, 150, 70, 150}, true);
+		
+		cur_img = TEX_PLR_FRONT;
+	
+		init();
+	}
 	
 	/**
-	 * Initialize the player at a position
+	 * Re-load the player at a position
 	 * @param nx - start pos x
 	 * @param ny - start pos y
 	 * @param tilewise - True means tiles, false means pixels.
@@ -43,17 +86,6 @@ public class Entity_player extends Entity_mobile {
 		x = nx * (tilewise ? 1 : GameBase.getWidth());
 		y = ny * (tilewise ? 1 : GameBase.getHeight());
 		updateBounds();
-		
-		try {
-			PLR_FRONT = new Image("lib/img/char/girl_front_static.png");
-			PLR_BACK =  new Image("lib/img/char/girl_back_static.png");
-			PLR_LEFT =  new Image("lib/img/char/girl_left_static.png");
-			PLR_RIGHT = new Image("lib/img/char/girl_right_static.png");
-			CUR_IMG = PLR_FRONT;
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.print("Failed to get player images");
-		}
 		
 		System.out.print("player initialized");
 	}
@@ -67,9 +99,63 @@ public class Entity_player extends Entity_mobile {
 	 * @param dx - movement difference x
 	 * @param dy - movement difference y
 	 */
-	public void move(float dx, float dy) {
-		//skip if you're not gonna move
-		if(dx == 0 && dy == 0) return;
+	public void move(float ndx, float ndy) {
+		dx += ndx;
+		dy += ndy;
+	}
+	
+	public void update() {
+		//skip if not moving
+		if(dx == 0 && dy == 0) {
+			isMoving = false; 
+			setAction("idle");
+			return;
+		} else isMoving = true;
+		
+		Rectangle attempted_bounds = getBounds();
+		attempted_bounds.setX(getBounds().getX() + dx);
+		attempted_bounds.setY(getBounds().getY() + dy);
+		Rectangle temp_obs = new Rectangle(100, 100, 100, 100);
+		if(PhysUtil.collision(attempted_bounds, temp_obs)) {
+			isColliding = true;
+			float ndx = dx, ndy = dy;
+			
+			temp_obs.setY(temp_obs.getY() + dy);
+			
+			if(PhysUtil.collision(getBounds(), temp_obs)) {
+				ndx = 0;
+			}
+
+			temp_obs.setX(temp_obs.getX() + dx);
+			temp_obs.setY(temp_obs.getY() - dy);
+			
+			if(PhysUtil.collision(getBounds(), temp_obs)) {
+				ndy = 0;
+			}
+			
+			temp_obs.setX(temp_obs.getX() - dx);
+			
+			//If it's on the edge of the bounds between 2/5 player width and the edge, x movement is blocked, and y movement is not zero
+			if(		getBounds().getX()+getBounds().getWidth()*0.6 < temp_obs.getX() && 
+					getBounds().getX()+getBounds().getWidth() > temp_obs.getX() && dy != 0 && ndx == 0 && dx <= 0)
+				ndx -= 0.1 * ControlManager.getDelta();
+
+			if(		getBounds().getX() >= temp_obs.getMaxX()*0.6 && 
+					getBounds().getX() <= temp_obs.getMaxX() && dy != 0 && ndx == 0 && dx >= 0)
+				ndx += 0.1 * ControlManager.getDelta();
+
+//			if(		getBounds().getX()+getBounds().getWidth()*0.6 < temp_obs.getX() && 
+//					getBounds().getX()+getBounds().getWidth() > temp_obs.getX() && dy != 0 && ndx == 0 && dx <= 0)
+//				ndx -= 0.1 * ControlManager.getDelta();
+//
+//			if(		getBounds().getX()+getBounds().getWidth()*0.6 < temp_obs.getX() && 
+//					getBounds().getX()+getBounds().getWidth() > temp_obs.getX() && dy != 0 && ndx == 0 && dx <= 0)
+//				ndx -= 0.1 * ControlManager.getDelta();
+			
+			
+			dx = ndx;
+			dy = ndy;
+		} else isColliding = false;
 		
 	//	System.out.println("Player pos: "+ x + ", "+y);
 		x += dx;
@@ -93,21 +179,121 @@ public class Entity_player extends Entity_mobile {
 	//		vel_z -= 1000 * ControlManager.getLagComp();
 		}
 		
-		//image handler
-		if(dx * dy == 0 && (dx != 0 || dy != 0))
+		// direction controller
+	//	if(dx == 0 && dy == 0) 
+		//	setAction("idle");
+	//	else 
+		if(dx * dy == 0) {
+			String newDirection;
 			if(dx < 0)
-				CUR_IMG = PLR_LEFT;
+				newDirection = "left";
 			else if(dx > 0)
-				CUR_IMG = PLR_RIGHT;
+				newDirection = "right";
 			else if(dy < 0)
-				CUR_IMG = PLR_BACK;
+				newDirection = "back";
 			else
-				CUR_IMG = PLR_FRONT;
+				newDirection = "front";
+			
+			setAction("move", newDirection);
+		}
 				
 		updateBounds();
+		
+		dx = 0;
+		dy = 0;
 	}
 	
 	
+	private void setAction(String newAction, String newDirection) {
+		if(newAction == "move") {
+			if(newDirection == "left") {
+				if(cur_anim == null || !cur_anim.equals(ANIM_PLR_RUN_LEFT)) {
+					cur_anim = ANIM_PLR_RUN_LEFT;
+					cur_anim.setPingPong(false);
+					cur_anim.start();
+				}
+				
+				flipCurImg = false;
+			}
+			
+			else if(newDirection == "right") {
+				if(cur_anim == null || !cur_anim.equals(ANIM_PLR_RUN_RIGHT)) {
+					cur_anim = ANIM_PLR_RUN_RIGHT;
+					cur_anim.setPingPong(false);
+					cur_anim.start();
+				}
+				
+				flipCurImg = true;
+			}
+			
+			else if(newDirection == "back") {
+				cur_anim = null;
+				cur_img = TEX_PLR_BACK;
+				
+				flipCurImg = false;
+			}
+			
+			else if(newDirection == "front") {
+				if(cur_anim == null || !cur_anim.equals(ANIM_PLR_RUN_FRONT)) {
+					cur_anim = ANIM_PLR_RUN_FRONT;
+					cur_anim.setPingPong(true);
+					cur_anim.start();
+				}
+				
+				flipCurImg = false;
+			}
+			
+			else {
+				System.out.println("Invalid direction: \""+newDirection+"\"");
+				return;
+			}
+		}
+		
+		else if(newAction == "idle") {
+			if(cur_anim != null && !cur_anim.isStopped()) cur_anim.stop();
+			if(newDirection == "left") {
+				cur_anim = null;
+				cur_img = TEX_PLR_LEFT;
+				
+				flipCurImg = false;
+			}
+			
+			else if(newDirection == "right") {
+				cur_anim = null;
+				cur_img = TEX_PLR_RIGHT;
+				
+				flipCurImg = false;
+			}
+			
+			else if(newDirection == "back") {
+				cur_anim = null;
+				cur_img = TEX_PLR_BACK;
+				
+				flipCurImg = false;
+			}
+			
+			else if(newDirection == "front") {
+				cur_anim = null;
+				cur_img = TEX_PLR_FRONT;
+				
+				flipCurImg = false;
+			}
+			
+			else {
+				System.out.println("Invalid direction: \""+newDirection+"\"");
+				return;
+			}
+		}
+		else
+			System.out.println("Invalid action: \""+newAction+"\"");
+		
+		direction = newDirection;
+	}
+	
+	private void setAction(String newAction) {
+		setAction(newAction, direction);
+	}
+
 	public float getX() {
 		return x;
 	}
@@ -116,8 +302,13 @@ public class Entity_player extends Entity_mobile {
 	}
 	
 	private void updateBounds() {
-		bounds.setX(x - 18);
-		bounds.setY(y + 18);
+		bounds.setX(x - getBounds().getWidth()/2);
+		bounds.setY(y + getBounds().getHeight()/2);
+	}
+	
+	public void resizeBounds(float newWidth, float newHeight) {
+		bounds.setWidth(newWidth);
+		bounds.setHeight(newHeight);
 	}
 	
 	public float getZ() {return z;}
@@ -156,12 +347,6 @@ public class Entity_player extends Entity_mobile {
 	}
 
 	@Override
-	public void move(double nx, double ny) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void draw() {
 		// TODO Auto-generated method stub
 		
@@ -175,15 +360,37 @@ public class Entity_player extends Entity_mobile {
 	
 	@Override
 	public Image getImg() {
-		return CUR_IMG;
+		img_offset_x = 0;
+		img_offset_y = 0;
+		
+		if(cur_anim != null) {
+			cur_anim.update(ControlManager.getDelta());
+			cur_img = cur_anim.getCurrentFrame();
+			String[] offsetImgs = {
+					"lib/img/char/girl_front_run01.png",
+					"lib/img/char/girl_side_run01.png",
+					"lib/img/char/girl_side_run03.png"
+			};
+			for(String s : offsetImgs)
+				if(cur_img.getResourceReference().equals(s)) {
+					img_offset_y -= 3;
+					break;
+				}
+		}
+		if(flipCurImg) {
+			cur_img = cur_img.getFlippedCopy(true, false);
+		}
+		return cur_img;
 	}
 	
 	public Image getShadowCasterImg() {
-		if(CUR_IMG.equals(PLR_FRONT))
-			return PLR_BACK;
-		else if(CUR_IMG.equals(PLR_BACK))
-			return PLR_FRONT;
-		else return CUR_IMG;
+		if(cur_img.equals(TEX_PLR_FRONT))
+			return TEX_PLR_BACK;
+		
+		else if(cur_img.equals(TEX_PLR_BACK))
+			return TEX_PLR_FRONT;
+		
+		else return cur_img;
 	}
 
 	public Rectangle getBounds() {

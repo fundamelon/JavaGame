@@ -26,6 +26,9 @@ public class ControlManager {
 	
 	private static int mousePrevX = 0, mousePrevY = 0, mouseDX, mouseDY;
 	
+	private static boolean[] mouseButtonStatus = new boolean[16];
+	private static boolean[] mouseButtonClicked = new boolean[16];
+	
 	public static int shake_time = 0;
 	
 	public static int delta;
@@ -40,6 +43,8 @@ public class ControlManager {
 		delta = newdelta;
 		
 		updatePlayerCtrls();
+		updateMouseButtons();
+		
 		if(Mouse.isButtonDown(0))
 		{
 		//	GraphicsManager.createParticleShower();
@@ -160,6 +165,21 @@ public class ControlManager {
 			GraphicsManager.setFade(true);
 	}
 	
+	public static void updateMouseButtons() {
+		for(int i = 0; i < 16; i++) {
+			if(Mouse.isButtonDown(i)) {
+				if(mouseButtonStatus[i])
+					mouseButtonClicked[i] = false;
+				else 
+					mouseButtonClicked[i] = true;
+				
+				mouseButtonStatus[i] = Mouse.isButtonDown(i);
+			}
+		}
+		if(mouseButtonClicked[0])
+			System.out.println("Mouse button 0 is "+mouseButtonStatus[0]+" and clicked is "+mouseButtonClicked[0]);
+	}
+	
 	
 	/**
 	 * Get key status of selected key char value, 0-500.
@@ -170,8 +190,12 @@ public class ControlManager {
 		return keys[kC];
 	}
 	
-	public static boolean isMouseButtonDown(int i) {
-		return Mouse.isButtonDown(i);
+	public static boolean mouseButtonDown(int i) {
+		return mouseButtonStatus[i];
+	}
+	
+	public static boolean mouseButtonClick(int i) {
+		return mouseButtonClicked[i];
 	}
 	
 	

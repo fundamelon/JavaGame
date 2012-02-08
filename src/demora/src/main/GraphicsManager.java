@@ -9,6 +9,7 @@ import main.depreciated.ParticleEmitter;
 import main.entity.Entity;
 import main.entity.EntityManager;
 import main.particles.*;
+import main.pathfinding.*;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
@@ -21,6 +22,7 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.particles.ParticleSystem;
 
@@ -30,8 +32,8 @@ public class GraphicsManager {
 	static GameBase panel;
 	public static ParticleEmitter emitters[] = new ParticleEmitter[1000];
 	public static ParticleEmitter emitter_dump[] = new ParticleEmitter[emitters.length];
-	public static org.newdawn.slick.particles.ParticleEmitter fire_effect;
-	public static org.newdawn.slick.particles.ParticleSystem particle_system;
+	public static org.newdawn.slick.particles.ParticleSystem particle_system_fire;
+	public static org.newdawn.slick.particles.ParticleSystem particle_system_smoke;
 	private static int sparkct = 0, particle_count = 0;
 	private static int fps_lag;
 	public static boolean first_run = true;
@@ -40,6 +42,8 @@ public class GraphicsManager {
 	private static Color overlayCol = new Color(fadeCol.getRed(), fadeCol.getGreen(), fadeCol.getBlue(), 0);
 	//Vars with preceding underscore are to be values for render options.  :O
 	private static boolean fadeMode = true, helperText = false, shake = false;
+	
+	private static boolean debug = false;
 	
 	/**
 	 * Initializes the object and loads images.
@@ -52,14 +56,16 @@ public class GraphicsManager {
 		texture = new Image[10];
 		
 		try {
-			particle_system = new ParticleSystem(new Image("lib/img/particle/flamelrg_02.tga"));
-		//	particle_system = new ParticleSystem(new Image("src/org/newdawn/slick/data/particle.tga"));
-		//	particle_system = new ParticleSystem(new Image("lib/img/Angry_Birds_promo_art.png"));
+			particle_system_fire = new ParticleSystem(new Image("lib/img/particle/flamelrg_02.tga"));
+			particle_system_smoke = new ParticleSystem(new Image("lib/img/particle/smoke_02.tga"));
+		//	particle_system_fire = new ParticleSystem(new Image("src/org/newdawn/slick/data/particle.tga"));
+		//	particle_system_fire = new ParticleSystem(new Image("lib/img/Angry_Birds_promo_art.png"));
 		} catch (SlickException e) {
 			e.printStackTrace();
 		}
-
-		particle_system.setBlendingMode(1);
+		
+		particle_system_smoke.setBlendingMode(ParticleSystem.BLEND_COMBINE);
+		particle_system_fire.setBlendingMode(ParticleSystem.BLEND_ADDITIVE);
 		
 	}
 	
@@ -81,48 +87,78 @@ public class GraphicsManager {
 		Camera.followPlayer();
 		
 		renderMap(g);
+		
+		for(Rectangle r : GameBase.getZone().buildCollisionArray()) 
+			if(r!=null)
+				g.draw(r);
+		
+		
 		//Set the camera to follow the player with the players coordinates, then update the camera.
-
+		
 		Camera.update();
 		Camera.moveToPos(EntityManager.getPlayer().getX(), EntityManager.getPlayer().getY(), 1); 
 		
 		g.translate(-Camera.getAnchorX(), -Camera.getAnchorY());
-		
+
+		if(debug) {
+		//	AIManager.renderNodeMap(g);
+			new AStarHeuristic(AIManager.getNodeMap()).createPath().render(g);
+		}
 		
 		renderEffects(g);
 		renderEntities(g);
 		
-		particle_system.render();
+		particle_system_smoke.render();
+		particle_system_fire.render();
 		
 		g.translate(Camera.getAnchorX(), Camera.getAnchorY());
 		
-		
-		if(ControlManager.isMouseButtonDown(0)) {
-			g.setColor(Color.white);
-			float[] xArr = ControlManager.getMouseTraceXArr();
-			float[] yArr = ControlManager.getMouseTraceYArr();
-			for(int i = 0; i < ControlManager.getMouseTraceLength()-1; i++) {
-				if(xArr[i+1] != 0)
-					g.drawLine(xArr[i], GameBase.getHeight() - yArr[i], xArr[i+1], GameBase.getHeight() - yArr[i+1]);
+		if(debug) {
+			if(ControlManager.mouseButtonDown(0)) {
+				g.setColor(Color.white);
+				float[] xArr = ControlManager.getMouseTraceXArr();
+				float[] yArr = ControlManager.getMouseTraceYArr();
+				for(int i = 0; i < ControlManager.getMouseTraceLength()-1; i++) {
+					if(xArr[i+1] != 0)
+						g.drawLine(xArr[i], GameBase.getHeight() - yArr[i], xArr[i+1], GameBase.getHeight() - yArr[i+1]);
+				}
+				g.setColor(Color.red);
+				
+	
+				if(ControlManager.mouseButtonClick(0)) {
+					for(int i = 0; i < 5; i++) {
+						particle_system_smoke.addEmitter(new Emitter_SmokeMed());
+						particle_system_smoke.getEmitter(particle_system_smoke.getEmitterCount()-1).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
+					}
+					for(int i = 0; i < 5; i++) {
+						particle_system_fire.addEmitter(new Emitter_FireMed());
+						particle_system_fire.getEmitter(particle_system_fire.getEmitterCount()-1).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
+					}
+				}
+			//	for(int i = 0; i < particle_system_fire.getEmitterCount(); i++) {
+			//		particle_system_fire.getEmitter(i).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
+			//	}
 			}
-			g.setColor(Color.red);
 			
-			if(particle_system.getEmitterCount() == 0)
-				for(int i = 0; i < 5; i++) 
-					particle_system.addEmitter(new Emitter_FireLarge());
+	
+			if(ControlManager.mouseButtonDown(1)) {
+				int tileX = GameBase.getZone().getTileAtX(toWorldX(ControlManager.getMouseX()));
+				int tileY = GameBase.getZone().getTileAtY(toWorldY(ControlManager.getMouseY()));
+				Color oldColor = g.getColor();
+				g.setColor(Color.black);
+				g.drawRect(toLocalX(tileX * 32), toLocalY(tileY * 32), 32, 32);
+				g.setColor(oldColor);
+				System.out.println("ID: "+(GameBase.getZone().getData().getTileId(tileX, tileY, 2)));
+			}
 			
+			g.drawRect(ControlManager.getMouseX() - 8,  ControlManager.getMouseY() - 8, 16, 16);
 		}
-		else if(particle_system.getEmitterCount() != 0)
-				particle_system.removeAllEmitters();
-		
-		g.drawRect(ControlManager.getMouseX() - 8,  ControlManager.getMouseY() - 8, 16, 16);
 		
 		g.setColor(oldCol);
 		
-		for(int i = 0; i < particle_system.getEmitterCount(); i++)
-			particle_system.getEmitter(i).setPos(toLocalX(ControlManager.getMouseX()), toLocalY(ControlManager.getMouseY()));
 		
-		particle_system.update(delta);
+		particle_system_fire.update(delta);
+		particle_system_smoke.update(delta);
 		
 		if(Keyboard.isKeyDown(Keyboard.KEY_F2) && !Keyboard.isRepeatEvent()) {
 			
@@ -145,37 +181,7 @@ public class GraphicsManager {
 		}
 	}
 	
-	public static void renderMainMenu(Graphics g) {
-//		Color oldColor = g.getColor();
-//		if(first_run) {
-//			boolean done = false;
-//			while(!done)
-//				try {
-//					ImageOp op = null;				
-//					float[] matrix = {
-//					        0.111f, 0.111f, 0.111f, 
-//					        0.111f, 0.111f, 0.111f, 
-//					        0.111f, 0.111f, 0.111f, 
-//					    };
-//					op = new ConvolveOp( new Kernel(3, 3, matrix), ConvolveOp.EDGE_NO_OP, null );
-//					bg_blurred = panel.override.createScreenCapture(new Rectangle(Window.getPanel().getLocationOnScreen().x, Window.getPanel().getLocationOnScreen().y, Window.getPanelWidth(), Window.getPanelHeight()));
-//					Image trans = null;
-//					bg_blurred = op.filter(bg_blurred, trans);
-//					g2.drawImage(bg_blurred, op, 0, 0);
-//				//	bg_blurred = new Robot().createScreenCapture(new Rectangle(Window.getPanel().getLocationOnScreen().x, Window.getPanel().getLocationOnScreen().y, Window.getPanelWidth(), Window.getPanelHeight()));
-//					done = true;
-//				} catch (Exception e) {e.printStackTrace(); done=true;}
-//		}
-//		first_run = false;
-//		g.drawImage(bg_blurred, 0, 0, null);
-//		g.setColor(new Color(0, 0, 0, 15));
-//		.fillRect(0, 0, Window.getPanelWidth(), Window.getPanelHeight());
-//		g2.setColor(new Color(0, 0, 0, 120));
-//		g2.fillRect(panel.getWidth() / 2 - panel.getWidth() / 6, 200, panel.getWidth() / 3, 100);
-//		g2.setColor(Color.white);
-//		g2.drawString("le menue", panel.getWidth() / 2 - 50, 300);
-//		g2.setColor(oldColor);
-	}
+	public static void renderMainMenu(Graphics g) {	}
 	
 	/**
 	 * Create a burst of particles at this location!
@@ -198,11 +204,25 @@ public class GraphicsManager {
 			sparkct++;
 	}
 	
+	public static ParticleSystem getParticleSystemFire() {
+		return particle_system_fire;
+	}
+	
+	public static float getEmitterX(ParticleEmitter em) {
+		return em.getX();
+	}
+	
+	public static float getEmitterY(ParticleEmitter em) {
+		return em.getY();
+	}
 	
 	public static void renderEntities(Graphics g) {
 		for(int i = 0; i < EntityManager.getTableLength("mobile"); i++) {
 			Entity curEnt = EntityManager.getByIndex(i, "mobile");
-			g.draw(curEnt.getBounds());
+			g.draw(new Rectangle(100, 100, 100, 100));
+			
+			if(debug) 
+				g.draw(curEnt.getBounds());
 			
 			Image shadow = curEnt.getShadowCasterImg();		
 			g.pushTransform();
@@ -211,10 +231,10 @@ public class GraphicsManager {
 			
 			g.scale(1, -0.4f);
 			shadow.setAlpha(0.3f);
-			shadow.draw(x-33, -y/0.4f - 370, shadow.getWidth(), shadow.getHeight(), 0, 40, Color.black);
+			shadow.draw(x-33+curEnt.getImgOffsetX(), -y/0.4f - 370 + curEnt.getImgOffsetY(), shadow.getWidth(), shadow.getHeight(), 0, 40, Color.black);
 			g.popTransform();
 			shadow.setAlpha(1);
-			g.drawImage(curEnt.getImg(), x, y);
+			g.drawImage(curEnt.getImg(), x + curEnt.getImgOffsetX(), y + curEnt.getImgOffsetY());
 		}
 	}
 	
@@ -268,6 +288,10 @@ public class GraphicsManager {
 			g.drawLine(k*wdOfRow , 0, k*wdOfRow , GameBase.getHeight());
 		
 		g.setColor(oldColor);
+	}
+	
+	public static void setDebugMode(boolean mode) {
+		debug = mode;
 	}
 	
 	/**
@@ -326,7 +350,7 @@ public class GraphicsManager {
 	public static void shake() {
 		shake = true;
 	}
-	
+	                                                                                  
 	
 	
 	//Important functions: they add the camera's x and y to the given GLOBAL coordinates
@@ -338,7 +362,7 @@ public class GraphicsManager {
 	 * @return localized x value
 	 */
 	public static float toLocalX(float ox) {
-		return ox + Camera.getAnchorX();
+		return ox - Camera.getAnchorX();
 	}
 	/**
 	 * Translate a global y value to a local y value
@@ -346,14 +370,14 @@ public class GraphicsManager {
 	 * @return localized y value
 	 */
 	public static float toLocalY(float oy) {
-		return oy + Camera.getAnchorY();
+		return oy - Camera.getAnchorY();
 	}
 	
 	public static float toWorldX(float ox) {
-		return ox - Camera.getAnchorX();
+		return ox + Camera.getAnchorX();
 	}
 	
 	public static float toWorldY(float oy) {
-		return oy - Camera.getAnchorY();
+		return oy + Camera.getAnchorY();
 	}
 }

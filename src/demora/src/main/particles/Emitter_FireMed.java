@@ -11,7 +11,7 @@ public class Emitter_FireMed implements ParticleEmitter {
 	private int y;
 	
 	/** The particle emission rate */
-	private int interval = 50;
+	private int interval = 30;
 	/** Time til the next particle */
 	private int timer;
 	/** The size of the initial particles */
@@ -62,10 +62,9 @@ public class Emitter_FireMed implements ParticleEmitter {
 			p.setColor(1, 1, 1, 0.4f + (float)Math.abs(Math.cos(variation_timer * 0.0002 + Math.sin(variation_timer*0.001))) * 0.1f);
 			p.setPosition(x, y);
 			p.setSize(size);
-			float vx = (float) (-0.02f + (Math.random() * 0.04f)) + (float)Math.sin(variation_timer * 0.0003 + Math.sin(variation_timer*0.001))*0.03f;
-			float vy = (float) (-(Math.random() * 0.15f));
+			float vx = (float) (-0.01f + (Math.random() * 0.02f)) + (float)Math.sin(variation_timer * 0.0003 + Math.sin(variation_timer*0.001))*0.01f;
+			float vy = (float) (-(Math.random() * 0.12f));
 			
-			vx += ControlManager.getMouseDX() * 1000;
 			
 			p.setVelocity(vx, vy, 1.1f);
 		}
@@ -147,5 +146,11 @@ public class Emitter_FireMed implements ParticleEmitter {
 	 * @see org.newdawn.slick.particles.ParticleEmitter#resetState()
 	 */
 	public void resetState() {
+	}
+
+	@Override
+	public float getBrightness() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

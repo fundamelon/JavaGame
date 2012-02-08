@@ -2,6 +2,9 @@ package main.entity;
 
 import java.util.ArrayList;
 import java.util.Vector;
+
+import org.newdawn.slick.SlickException;
+
 import main.entity.*;
 
 public class EntityManager {
@@ -13,7 +16,11 @@ public class EntityManager {
 	public static Entity_player ENT_PLAYER;
 	
 	public static void init() {
-		ENT_PLAYER = new Entity_player();
+		try {
+			ENT_PLAYER = new Entity_player();
+		} catch (SlickException e) {
+			e.printStackTrace();
+		}
 		ENT_PLAYER.init(0, 0, false);
 		mobile_ents.add(0, ENT_PLAYER);
 		
@@ -92,7 +99,7 @@ public class EntityManager {
 	
 	public static void update() {
 		for(int i = 0; i < mobile_ents.size(); i++) {
-			
+			mobile_ents.get(i).update();
 		}
 	}
 	

@@ -877,4 +877,10 @@ public class ConfigurableEmitter implements ParticleEmitter {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public float getBrightness() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

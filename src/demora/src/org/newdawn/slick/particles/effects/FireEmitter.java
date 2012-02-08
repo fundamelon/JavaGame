@@ -142,4 +142,16 @@ public class FireEmitter implements ParticleEmitter {
 	 */
 	public void resetState() {
 	}
+
+	@Override
+	public void setPos(float x, float y) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public float getBrightness() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

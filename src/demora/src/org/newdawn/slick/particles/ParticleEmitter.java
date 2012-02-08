@@ -20,6 +20,8 @@ public interface ParticleEmitter {
 	public void update(ParticleSystem system, int delta);
 	
 	public void setPos(float x, float y);
+	
+	public float getBrightness();
 
 	/**
 	 * Check if this emitter has completed it's cycle

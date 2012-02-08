@@ -45,7 +45,8 @@ public class GameBase {
 	static long lastFPS;
 	
 	static boolean vsync;
-
+	public static boolean shading;
+	
 	private static Shader shader;
 	
 	public static void main(String[] args) {
@@ -62,15 +63,21 @@ public class GameBase {
 		}
 		Graphics g = new Graphics();
 		
-		currentZone = new Zone();
+		loadZone(new Zone());
 		
 		GraphicsManager.init();
 		ControlManager.init();
 		EntityManager.init();
+		AIManager.init();
 
 		initGL();
 		
-		shader = new Shader("src/shader/screen.vert", "src/shader/screen.frag");
+		AIManager.generateNodeMap(32, 64, 64);
+		
+	//	shading = true;
+		GraphicsManager.setDebugMode(true);
+		
+	//	shader = new Shader("src/shader/screen.vert", "src/shader/screen.frag");
 		
 		
 		getDelta(); // call once before loop to initialise lastFrame
@@ -95,8 +102,6 @@ public class GameBase {
 		//Keyboard Event Handlers!!
 		//TODO: Move to ControlManager
 		
-		ControlManager.update(delta);
-		
 		while (Keyboard.next()) {
 		    if (Keyboard.getEventKeyState()) {
 		        if (Keyboard.getEventKey() == Keyboard.KEY_F) {
@@ -112,6 +117,9 @@ public class GameBase {
 		if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
 			System.exit(0);
 			
+
+		ControlManager.update(delta);
+		EntityManager.update();
 		
 		updateFPS(); // update FPS Counter
 	}
@@ -224,7 +232,7 @@ public class GameBase {
 		g.drawLine(0.0f, 0f, 100f, 100f);
 		GraphicsManager.renderMain(g, delta);
 
-		shader.deactivate();
+	//	shader.deactivate();
 	}
 	
 	public static int getWidth() {
@@ -258,71 +266,10 @@ public class GameBase {
 	
 	public static void loadZone(Zone newZone) {
 		currentZone = newZone;
+		currentZone.init();
 	}
 	
 	public static Zone getZone() {
 		return currentZone;
 	}
-	
-//	
-//	private static int createVertShader(String filename) {
-//		vertShader = ARBShaderObjects.glCreateShaderObjectARB(ARBVertexShader.GL_VERTEX_SHADER_ARB);
-//		if(vertShader == 0) {return 0;}
-//		String vertexCode = "";
-//		String line;
-//		try {
-//			BufferedReader reader = new BufferedReader(new FileReader(filename));
-//			while((line = reader.readLine()) != null) {
-//				vertexCode += line + "\n";
-//			}
-//		} catch(Exception e) {
-//			System.out.println("Vertex shader read failed");
-//			e.printStackTrace();
-//			return 0;
-//		}
-//		
-//		ARBShaderObjects.glShaderSourceARB(vertShader, vertexCode);
-//		ARBShaderObjects.glCompileShaderARB(vertShader);
-//		
-//		return vertShader;
-//	}
-//	
-//	private static int createFragShader(String filename) {
-//		fragShader = ARBShaderObjects.glCreateShaderObjectARB(ARBFragmentShader.GL_FRAGMENT_SHADER_ARB);
-//		if(fragShader == 0) {return 0;}
-//		String fragCode = "";
-//		String line;
-//		
-//		try {
-//			BufferedReader reader = new BufferedReader(new FileReader(filename));
-//			while((line=reader.readLine()) != null) {
-//				fragCode += line + "\n";
-//			}
-//		} catch(Exception e) {
-//			System.out.println("Fragment shader read failed");
-//			e.printStackTrace();
-//			return 0;
-//		}
-//		ARBShaderObjects.glShaderSourceARB(fragShader, fragCode);
-//		ARBShaderObjects.glCompileShaderARB(fragShader);
-//		
-//		return fragShader;
-//	}
-//	
-//	private static boolean printLogInfo(int obj) {
-//		IntBuffer iVal = BufferUtils.createIntBuffer(1);
-//		ARBShaderObjects.glGetObjectParameterARB(obj,  ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB, iVal);
-//		
-//		int length = iVal.get();
-//		if(length > 1) {
-//			ByteBuffer infoLog = BufferUtils.createByteBuffer(length);
-//			iVal.flip();
-//			ARBShaderObjects.glGetInfoLogARB(obj, iVal, infoLog);
-//			byte[] infoBytes = new byte[length];
-//			infoLog.get(infoBytes);
-//			String out = new String(infoBytes);
-//			System.out.println("Info log:\n"+out);
-//		} else return true;
-//		return false;
-//	}
 }

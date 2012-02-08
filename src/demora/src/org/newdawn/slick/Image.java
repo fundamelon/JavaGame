@@ -3,6 +3,10 @@ package org.newdawn.slick;
 import java.io.IOException;
 import java.io.InputStream;
 
+import main.GameBase;
+import main.GraphicsManager;
+import main.entity.EntityManager;
+
 import org.lwjgl.opengl.EXTSecondaryColor;
 import org.lwjgl.opengl.EXTTextureMirrorClamp;
 import org.lwjgl.opengl.GL11;
@@ -522,7 +526,6 @@ public class Image implements Renderable {
 	 */
 	public void drawEmbedded(float x,float y,float width,float height) {
 		init();
-		
 		if (corners == null) {
 		    GL.glTexCoord2f(textureOffsetX, textureOffsetY);
 			GL.glVertex3f(x, y, 0);
@@ -548,6 +551,68 @@ public class Image implements Renderable {
 			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
 			GL.glVertex3f(x + width, y, 0);
 		}
+	}
+	
+	/**
+	 * Draw this image as part of a collection of images
+	 * 
+	 * @param x The x location to draw the image at
+	 * @param y The y location to draw the image at
+	 * @param width The width to render the image at
+	 * @param height The height to render the image at
+	 */
+	public void drawEmbeddedShaded(float x,float y,float width,float height) {
+		init();
+		float [] oldColor = GL.getCurrentColor();
+		
+		if (corners == null) {
+		    GL.glTexCoord2f(textureOffsetX, textureOffsetY);
+		    shadePoint(x, y);
+			GL.glVertex3f(x, y, 0);
+			GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
+		    shadePoint(x, y + height);
+			GL.glVertex3f(x, y + height, 0);
+			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY
+					+ textureHeight);
+		    shadePoint(x + width, y + width);
+			GL.glVertex3f(x + width, y + height, 0);
+			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
+			shadePoint(x + width, y);
+			GL.glVertex3f(x + width, y, 0);
+		} else {
+			corners[TOP_LEFT].bind();
+		    GL.glTexCoord2f(textureOffsetX, textureOffsetY);
+			GL.glVertex3f(x, y, 0);
+			corners[BOTTOM_LEFT].bind();
+			GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
+			GL.glVertex3f(x, y + height, 0);
+			corners[BOTTOM_RIGHT].bind();
+			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY
+					+ textureHeight);
+			GL.glVertex3f(x + width, y + height, 0);
+			corners[TOP_RIGHT].bind();
+			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
+			GL.glVertex3f(x + width, y, 0);
+		}
+		GL.glColor4f(oldColor[0], oldColor[1], oldColor[2], oldColor[3]);
+	}
+	
+	public void shadePoint(float x, float y) {
+		float brightness = getBrightness(x, y);
+		GL.glColor4f(brightness, brightness, brightness, 1.0f);
+	}
+	
+	public float getBrightness(float x, float y) {
+		float brightnessMul = 0f;
+		for(int i = 0; i < GraphicsManager.getParticleSystemFire().getEmitterCount(); i++) {
+			brightnessMul += GraphicsManager.getParticleSystemFire().getEmitter(i).getBrightness();
+		}
+		brightnessMul /= GraphicsManager.getParticleSystemFire().getEmitterCount();
+		
+		float sourceX = main.ControlManager.getMouseX();
+		float sourceY = main.ControlManager.getMouseY();
+		return 1.0f - (float)(Math.max(Math.pow(((sourceX) - x) / (200), 2) + 
+				(Math.pow(((sourceY) - y) / (200), 2)), 0));
 	}
 
 	/**

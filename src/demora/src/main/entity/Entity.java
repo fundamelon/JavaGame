@@ -22,6 +22,11 @@ public interface Entity {
 	public float getAng();
 	
 	public void init();
+	
+	public void update();
+	
+	public float getImgOffsetX();
+	public float getImgOffsetY();
 
 	void init(int nx, int ny, boolean tilewise);
 }
