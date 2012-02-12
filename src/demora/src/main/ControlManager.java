@@ -5,20 +5,21 @@ import main.entity.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-//It seems we don't need this.  We'll see about that later.
-//import javax.swing.Timer;
 
 public class ControlManager {
 	
 	//declaration of characters to watch for 
 	private static char KEY_MOVE_NORTH = "W".charAt(0);
 	private static char KEY_MOVE_SOUTH = "S".charAt(0);
-	private static char KEY_MOVE_EAST = "D".charAt(0);
-	private static char KEY_MOVE_WEST = "A".charAt(0);
+	private static char KEY_MOVE_EAST  = "D".charAt(0);
+	private static char KEY_MOVE_WEST  = "A".charAt(0);
 	private static float smoothTickX = 0, smoothTickY = 0;
 	private static boolean anyKeysPressed = false;
-	static boolean[] keys = new boolean[525];
-	static boolean[] keyPressed =  new boolean[keys.length];
+	
+	static boolean[] keyStatus = new boolean[Keyboard.getKeyCount()];
+	static boolean[] keyToggle = new boolean[keyStatus.length];
+	static boolean[] keyPressed =  new boolean[keyStatus.length];
+	static boolean[] keyReleased = new boolean[keyStatus.length];
 	
 	private static float[] mouseTraceX = new float[64];
 	private static float[] mouseTraceY = new float[64];
@@ -28,6 +29,15 @@ public class ControlManager {
 	
 	private static boolean[] mouseButtonStatus = new boolean[16];
 	private static boolean[] mouseButtonClicked = new boolean[16];
+	private static boolean[] mouseButtonReleased = new boolean[16];
+	
+	
+	public static int keyToggleMapRendering = Keyboard.KEY_M;
+	public static int keyToggleMeGusta = Keyboard.KEY_N;
+	
+	
+	public static int mousePrimary = 0;
+	public static int mouseSecondary = 1;
 	
 	public static int shake_time = 0;
 	
@@ -35,25 +45,32 @@ public class ControlManager {
 	
 	public static Entity currentEntity;
 		
+	/**Initialize to preconditional status*/
 	public static void init() {
 		traceCount = 0;
+		
+		setKeyToggle(keyToggleMapRendering);
+		setKeyToggle(keyToggleMeGusta);
 	}
 	
-	public static void update(int newdelta) {
-		delta = newdelta;
+	/**Run through input devices and update status*/
+	public static void update(int delta) {
+		ControlManager.delta = delta;
 		
 		updatePlayerCtrls();
 		updateMouseButtons();
+		updateKeys();
 		
-		if(Mouse.isButtonDown(0))
-		{
-		//	GraphicsManager.createParticleShower();
-			mouseTraceX[traceCount] = Mouse.getX();
-			mouseTraceY[traceCount] = Mouse.getY();
-			if(traceCount < mouseTraceX.length-1) traceCount++; else traceCount = 0;
-		} else for(int i = mouseTraceX.length-1; i >1; i--) {
-			mouseTraceX[i] = 0;
-		}
+//		if(keyStatus(keyToggleMapRendering)) {
+//			System.out.println("Map rendering: ON! :D");
+//		} else {
+//			System.out.println("Map rendering: OFF! :C");
+//		}
+		
+		mouseTraceX[traceCount] = Mouse.getX();
+		mouseTraceY[traceCount] = Mouse.getY();
+		traceCount++;
+		traceCount %= mouseTraceX.length;
 		
 		mouseDX = Mouse.getDX();
 		mouseDY = Mouse.getDY();
@@ -154,53 +171,116 @@ public class ControlManager {
 	
 	
 	
-	/**
-	 * Hack method for 0 and 9 for the fade function only
-	 */
-	public static void updateUtilKeys() {
-		if(keys["0".charAt(0)]) 
-			GraphicsManager.setFade(false);
-		
-		if(keys["9".charAt(0)])
-			GraphicsManager.setFade(true);
+	
+	public static void updateKeys() {
+		for(int i = 0; i < Keyboard.getKeyCount(); i++) {
+			if(Keyboard.isKeyDown(i)) {
+				if(keyStatus[i]) {
+					keyPressed[i] = false;
+				} else {
+					keyPressed[i] = true;
+					
+					if(GameBase.debug_keyboard) {
+						System.out.println("Key "+Keyboard.getKeyName(i)+" pressed");
+					}
+				}
+				
+				if(!keyToggle[i]) {
+					keyStatus[i] = true;
+				} else if(Keyboard.isKeyDown(i) != keyStatus[i]) {
+					keyStatus[i] = !keyStatus[i];
+				}
+			} else {
+				if(!keyStatus[i] || keyReleased[i]) {
+					keyReleased[i] = false;
+				} else {
+					keyReleased[i] = true;
+					
+					if(GameBase.debug_keyboard) {
+						System.out.println("Key "+Keyboard.getKeyName(i)+" released");
+					}
+				}
+				
+				if(!keyToggle[i]) {
+					keyStatus[i] = false;
+				}
+			}
+		}
 	}
 	
 	public static void updateMouseButtons() {
 		for(int i = 0; i < 16; i++) {
 			if(Mouse.isButtonDown(i)) {
-				if(mouseButtonStatus[i])
+				if(mouseButtonStatus[i]) {
 					mouseButtonClicked[i] = false;
-				else 
+				} else {
 					mouseButtonClicked[i] = true;
+					
+					if(GameBase.debug_mouse){
+						System.out.println("Mouse "+Mouse.getButtonName(i)+" pressed");
+					}
+				}
 				
-				mouseButtonStatus[i] = Mouse.isButtonDown(i);
+				mouseButtonStatus[i] = true;
+			} else {
+				if(!mouseButtonStatus[i] || mouseButtonReleased[i]) {
+					mouseButtonReleased[i] = false;
+				} else {
+					mouseButtonReleased[i] = true;
+
+					if(GameBase.debug_mouse) {
+						System.out.println("Mouse "+Mouse.getButtonName(i)+" released");
+					}
+				}
+				
+				mouseButtonStatus[i] = false;
 			}
 		}
-		if(mouseButtonClicked[0])
-			System.out.println("Mouse button 0 is "+mouseButtonStatus[0]+" and clicked is "+mouseButtonClicked[0]);
 	}
 	
-	
-	/**
-	 * Get key status of selected key char value, 0-500.
-	 * @param kC - char value of key in question
-	 * @return boolean key status: true is down, false is up
-	 */
-	public static boolean getKeyStatus(int kC) {
-		return keys[kC];
+	/**Status of a key on the keyboard*/
+	public static boolean keyStatus(int i) {
+		return keyStatus[i];
 	}
 	
-	public static boolean mouseButtonDown(int i) {
+	/**If key was just pressed*/
+	public static boolean keyPressed(int i) {
+		return keyPressed[i];
+	}
+	
+	/**If key was just released*/
+	public static boolean keyReleased(int i) {
+		return keyReleased[i];
+	}
+	
+	/**If the key is in toggle mode*/
+	public static boolean keyToggleable(int i) {
+		return keyToggle[i];
+	}
+	
+	/**Set a key to toggle mode*/
+	public static void setKeyToggle(int i) {
+		keyToggle[i] = true;
+	}
+	
+	/**Remove key toggle mode*/
+	public static void resetKeyToggle(int i) {
+		keyToggle[i] = false;
+	}
+	
+	/**Status of a mouse button*/
+	public static boolean mouseButtonStatus(int i) {
 		return mouseButtonStatus[i];
 	}
 	
-	public static boolean mouseButtonClick(int i) {
+	/**If mouse button was just clicked*/
+	public static boolean mouseButtonClicked(int i) {
 		return mouseButtonClicked[i];
 	}
 	
-	
-	public static void setKeyStatus(int kC, boolean newState) {
-		keys[kC] = newState;
+	/**If mouse button was just released*/
+	public static boolean mouseButtonReleased(int i) {
+		return mouseButtonReleased[i];
 	}
 	
 	public static char getKeyN() {return KEY_MOVE_NORTH;}
@@ -219,15 +299,13 @@ public class ControlManager {
 		return Math.max(high, Math.min(i, low));
 	}
 	
+	/**Identical to {@link main.ControlManager#clamp(double, double, double) clamp()}*/
 	public static float clamp(float i, float high, float low) {
 		return Math.max(high, Math.min(i, low));
 	}
 	
+	/**Identical to {@link main.ControlManager#clamp(double, double, double) clamp()}*/
 	public static int clamp(int i, int high, int low) {
 		return Math.max(high, Math.min(i, low));
 	}
-
-	
-	
-	
 }

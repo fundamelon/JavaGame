@@ -15,7 +15,7 @@ import org.newdawn.slick.geom.Rectangle;
 
 import main.*;
 
-public class Entity_player extends Entity_mobile {
+public class Entity_player extends Entity_mobile implements Entity {
 	
 	private final Image TEX_PLR_FRONT;
 	private final Image TEX_PLR_BACK;
@@ -36,6 +36,7 @@ public class Entity_player extends Entity_mobile {
 	
 	private float vel_z;
 	private int blockSize, dustCount = 0;
+	private float dist;
 	public float moveSpeed = 0.6f;
 	
 	private boolean isMoving = false;
@@ -112,78 +113,89 @@ public class Entity_player extends Entity_mobile {
 			return;
 		} else isMoving = true;
 		
+		float ndx = dx, ndy = dy;
+		isColliding = false;
+		
 		Rectangle attempted_bounds = getBounds();
 		attempted_bounds.setX(getBounds().getX() + dx);
 		attempted_bounds.setY(getBounds().getY() + dy);
-		Rectangle temp_obs = new Rectangle(100, 100, 100, 100);
-		if(PhysUtil.collision(attempted_bounds, temp_obs)) {
-			isColliding = true;
-			float ndx = dx, ndy = dy;
-			
-			temp_obs.setY(temp_obs.getY() + dy);
-			
-			if(PhysUtil.collision(getBounds(), temp_obs)) {
-				ndx = 0;
-			}
-
-			temp_obs.setX(temp_obs.getX() + dx);
-			temp_obs.setY(temp_obs.getY() - dy);
-			
-			if(PhysUtil.collision(getBounds(), temp_obs)) {
-				ndy = 0;
-			}
-			
-			temp_obs.setX(temp_obs.getX() - dx);
-			
-			//If it's on the edge of the bounds between 2/5 player width and the edge, x movement is blocked, and y movement is not zero
-			if(		getBounds().getX()+getBounds().getWidth()*0.6 < temp_obs.getX() && 
-					getBounds().getX()+getBounds().getWidth() > temp_obs.getX() && dy != 0 && ndx == 0 && dx <= 0)
-				ndx -= 0.1 * ControlManager.getDelta();
-
-			if(		getBounds().getX() >= temp_obs.getMaxX()*0.6 && 
-					getBounds().getX() <= temp_obs.getMaxX() && dy != 0 && ndx == 0 && dx >= 0)
-				ndx += 0.1 * ControlManager.getDelta();
-
-//			if(		getBounds().getX()+getBounds().getWidth()*0.6 < temp_obs.getX() && 
-//					getBounds().getX()+getBounds().getWidth() > temp_obs.getX() && dy != 0 && ndx == 0 && dx <= 0)
-//				ndx -= 0.1 * ControlManager.getDelta();
-//
-//			if(		getBounds().getX()+getBounds().getWidth()*0.6 < temp_obs.getX() && 
-//					getBounds().getX()+getBounds().getWidth() > temp_obs.getX() && dy != 0 && ndx == 0 && dx <= 0)
-//				ndx -= 0.1 * ControlManager.getDelta();
-			
-			
-			dx = ndx;
-			dy = ndy;
-		} else isColliding = false;
+		Rectangle[] collisionArray = GameBase.getZone().getCollisionArray();
+		for(int i = 0; i < collisionArray.length; i++) {
+		//	Rectangle temp_obs = new Rectangle(100, 100, 100, 100);
+			Rectangle temp_obs = collisionArray[i];
+			if(temp_obs != null) {
+				if(PhysUtil.collision(attempted_bounds, temp_obs)) {
+					isColliding = true;
+					
+					temp_obs.setY(temp_obs.getY() + dy);
+					
+					if(PhysUtil.collision(getBounds(), temp_obs)) {
+						ndx = 0;
+					}
 		
-	//	System.out.println("Player pos: "+ x + ", "+y);
-		x += dx;
-		y += dy;
+					temp_obs.setX(temp_obs.getX() + dx);
+					temp_obs.setY(temp_obs.getY() - dy);
+					
+					if(PhysUtil.collision(getBounds(), temp_obs)) {
+						ndy = 0;
+					}
+					
+					temp_obs.setX(temp_obs.getX() - dx);
+					
+					if(	!(	GameBase.getZone().blocked(i - 1) ||
+							GameBase.getZone().blocked(i + 1) ||
+							GameBase.getZone().blocked(i - GameBase.getZone().getWidth()) ||
+							GameBase.getZone().blocked(i + GameBase.getZone().getWidth()))) {
+				
+						//If it's within 24 pixels of corner, x movement is blocked,
+						//	and y movement is not zero, then nudge it over
+						//Left edge
+						if(		!GameBase.getZone().blocked(i-1) &&
+								getBounds().getX() + getBounds().getWidth()-24 < temp_obs.getX() && 
+								getBounds().getX() + getBounds().getWidth()    > temp_obs.getX() && 
+								dy != 0 && ndx == 0 && dx <= 0) {
+							ndx -= 0.05 * ControlManager.getDelta();
+						}
+						//Right edge
+						if(		!GameBase.getZone().blocked(i+1) &&
+								getBounds().getX() > temp_obs.getX() + temp_obs.getWidth()-24 && 
+								getBounds().getX() <= temp_obs.getMaxX() + temp_obs.getWidth() && 
+								dy != 0 && ndx == 0 && dx >= 0)	{
+							ndx += 0.05 * ControlManager.getDelta();
+						}
+						
+						//Top edge
+						if(		!GameBase.getZone().blocked(i - GameBase.getZone().getWidth()) &&
+								getBounds().getY() + getBounds().getHeight()-24 < temp_obs.getY() && 
+								getBounds().getY() + getBounds().getHeight() >= temp_obs.getY()&& 
+								dx != 0 && ndy == 0 && dy >= 0)	{
+							ndy -= 0.05 * ControlManager.getDelta();
+						}
+						//Bottom edge
+						if(		!GameBase.getZone().blocked(i - GameBase.getZone().getWidth()) &&
+								getBounds().getY() > temp_obs.getY() + temp_obs.getHeight()-24 && 
+								getBounds().getY() <= temp_obs.getMaxY() + temp_obs.getHeight() && 
+								dx != 0 && ndy == 0 && dy >= 0)	{
+							ndy += 0.05 * ControlManager.getDelta();
+						}
+					}
+				}
+			}
+		}
+		
+		dist = Math.abs(ndx) + Math.abs(ndy);
+		
+		x += ndx;
+		y += ndy;
 		x = ControlManager.clamp(x, 18, GameBase.getZone().getWidth() * 32 + blockSize + 18);
 		y = ControlManager.clamp(y, 18, GameBase.getZone().getHeight() * 32 + blockSize - 18);
 		
-		//If player is traveling downward and hits the original start pos then handle that accordingly
-		if(z <= 0 && Math.signum(vel_z) == -1) {
-			if(isJumping()) {
-			//	GraphicsManager.emitters[dustCount + 500] = new ParticleEmitter((int)x + 16, (int)y + 25, (int)(-vel_z * 0.1) + 5, -vel_z * 7, -vel_z * 1.3f, 0.9f, 0.9f, 1, false, true, new Color(139, 69, 19));
-				if(-vel_z > 1500) ControlManager.shake_time = (int)(-vel_z * 0.1);
-				GraphicsManager.emitters[dustCount + 500].setParticleSize(3);
-				if(dustCount < 100) dustCount++; else dustCount = 0;
-			}
-			
-			z = 0;
-			vel_z = 0;
-		} else {
-	//		z += vel_z * ControlManager.getLagComp();
-	//		vel_z -= 1000 * ControlManager.getLagComp();
-		}
+		//TODO: Jump function goes here
 		
 		// direction controller
-	//	if(dx == 0 && dy == 0) 
-		//	setAction("idle");
-	//	else 
-		if(dx * dy == 0) {
+		if(dist == 0) 
+			setAction("idle");
+		else if(dx * dy == 0) {
 			String newDirection;
 			if(dx < 0)
 				newDirection = "left";

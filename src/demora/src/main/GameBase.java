@@ -1,15 +1,8 @@
 package main;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
-import main.entity.Entity;
-import main.entity.EntityManager;
+import main.entity.*;
+import main.gui.*;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
@@ -31,10 +24,20 @@ public class GameBase {
 	
 
 	private static Zone currentZone;
+
+	/** Current game drawing mode
+	 * 0: Menu
+	 * 1: Game view
+	 * 2: Console
+	 */
+	public static int viewMode = 1;
 	
-	private static Entity ENT_Player;
+	public static final int VIEW_MENU = 0;
+	public static final int VIEW_GAME = 1;
+	public static final int VIEW_CONS = 2;
 	
-	
+	public static boolean debug_keyboard = false;
+	public static boolean debug_mouse = false;
 	
 	/** time at last frame */
 	static long lastFrame;
@@ -48,6 +51,8 @@ public class GameBase {
 	public static boolean shading;
 	
 	private static Shader shader;
+
+	public static boolean mapRendering = true;
 	
 	public static void main(String[] args) {
 		GameBase.start();
@@ -63,7 +68,7 @@ public class GameBase {
 		}
 		Graphics g = new Graphics();
 		
-		loadZone(new Zone());
+		loadZone(new Zone("lib/map/test.tmx"));
 		
 		GraphicsManager.init();
 		ControlManager.init();
@@ -86,6 +91,7 @@ public class GameBase {
 		while (!Display.isCloseRequested()) {
 			int delta = getDelta();
 
+			
 			update(delta);
 			render(g, delta);
 
@@ -118,8 +124,10 @@ public class GameBase {
 			System.exit(0);
 			
 
-		ControlManager.update(delta);
-		EntityManager.update();
+		if(viewMode == VIEW_GAME) {
+			ControlManager.update(delta);
+			EntityManager.update();
+		}
 		
 		updateFPS(); // update FPS Counter
 	}
@@ -221,16 +229,23 @@ public class GameBase {
 		
 		
 		//Fix transparent pixels being black
-	//	GL11.glEnable(GL11.GL_BLEND);
-	//	GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ZERO);
 	}
 	
 	public static void render(Graphics g, int delta) {	
 	//	shader.activate();
-		
-        g.setDrawMode(Graphics.MODE_NORMAL);
-		g.drawLine(0.0f, 0f, 100f, 100f);
-		GraphicsManager.renderMain(g, delta);
+		switch(viewMode) {
+		case VIEW_MENU:
+			break;
+		case VIEW_GAME:
+	        g.setDrawMode(Graphics.MODE_NORMAL);
+			g.drawLine(0.0f, 0f, 100f, 100f);
+			GraphicsManager.renderGame(g, delta);
+			break;
+		case VIEW_CONS:
+			break;
+		}
 
 	//	shader.deactivate();
 	}
@@ -243,27 +258,6 @@ public class GameBase {
 		return Display.getHeight();
 	}
 	
-	
-	private static ByteBuffer toByteString(String str, boolean isNullTerminated) {
-        int length = str.length();
-        if (isNullTerminated) {
-            length++;
-        }
-        ByteBuffer buff = BufferUtils.createByteBuffer(length);
-        buff.put(str.getBytes());
-
-        if (isNullTerminated) {
-            buff.put((byte) 0);
-        }
-
-        buff.flip();
-        return buff;
-    }
-	
-	private static ByteBuffer toByteString(String str) {
-		return toByteString(str, true);
-	}
-	
 	public static void loadZone(Zone newZone) {
 		currentZone = newZone;
 		currentZone.init();
@@ -271,5 +265,10 @@ public class GameBase {
 	
 	public static Zone getZone() {
 		return currentZone;
+	}
+
+	public static void quit() {
+		Display.destroy();
+		
 	}
 }

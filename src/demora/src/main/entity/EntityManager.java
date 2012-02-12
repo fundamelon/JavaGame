@@ -8,9 +8,7 @@ import org.newdawn.slick.SlickException;
 import main.entity.*;
 
 public class EntityManager {
-	public static ArrayList<Entity> mobile_ents = new ArrayList<Entity>();
-	public static ArrayList<Entity> item_ents = new ArrayList<Entity>(256);
-	public static ArrayList<Entity> env_ents = new ArrayList<Entity>(256);
+	public static ArrayList<Entity> entityTable = new ArrayList<Entity>();
 	public static ArrayList<Entity> tile_ents = new ArrayList<Entity>();
 	
 	public static Entity_player ENT_PLAYER;
@@ -22,84 +20,67 @@ public class EntityManager {
 			e.printStackTrace();
 		}
 		ENT_PLAYER.init(0, 0, false);
-		mobile_ents.add(0, ENT_PLAYER);
+		entityTable.add(0, ENT_PLAYER);
 		
 	}
 	
-	public static int getIndex(Entity ent, String setname) {
-		return getSet(setname).indexOf(ent);
+	public static int getIndex(Entity ent) {
+		return entityTable.indexOf(ent);
 	}
 	
-	public static Entity getByIndex(int i, String setname) {
-		return getSet(setname).get(i);
+	public static Entity getByIndex(int i) {
+		return entityTable.get(i);
 	}
 	
-	public static Entity getByName(String name, String setname) {
-		ArrayList<Entity> ent_list = getSet(setname);
-		for(int i = 0; i < ent_list.size(); i++) {
-			if(ent_list.get(i).getName().equals(name))
-				return ent_list.get(i);
+	public static Entity getByName(String name) {
+		for(int i = 0; i < entityTable.size(); i++) {
+			if(entityTable.get(i).getName().equals(name))
+				return entityTable.get(i);
 		}
 		return null;
 	}
 	
-	public static int getTableLength(String setname) {
-		return getSet(setname).size();
+	public static int getTableLength() {
+		return entityTable.size();
 	}
 	
-	public static ArrayList<Entity> getByType(String entType, String setname) {
-		ArrayList<Entity> ent_list = getSet(setname);
+	public static ArrayList<Entity> getByType(String entType) {
 		ArrayList<Entity> outTable = new ArrayList<Entity>();
-		for(int i = 0; i < ent_list.size(); i++) {
-			if(ent_list.get(i).getType().equals(entType))
-				outTable.add(ent_list.get(i));				
+		for(int i = 0; i < entityTable.size(); i++) {
+			if(entityTable.get(i).getType().equals(entType))
+				outTable.add(entityTable.get(i));				
 		}
 		return outTable;
 	}
 	
-	public static void addToTable(Entity ent, String setname) {
-		if(getIndex(ent, setname) == -1) {
-			getSet(setname).add(ent);
-		}
+	public static boolean addToTable(Entity ent) {
+		if(entityTable.indexOf(ent) == -1) {
+			entityTable.add(ent);
+			return true;
+		} else return false;
 	}
 	
-	public static void addToTable(Vector<Entity> oldTable, String setname) {
-		ArrayList<Entity> ent_list = getSet(setname);
+	public static void addToTable(Vector<Entity> oldTable) {
 		for(int i = 0; i < oldTable.size(); i++) {
-			if(ent_list.indexOf(oldTable.get(i)) != -1)
-				ent_list.add(oldTable.get(i));
+			if(entityTable.indexOf(oldTable.get(i)) != -1)
+				entityTable.add(oldTable.get(i));
 		}
 	}
 	
 	public static Entity_player getPlayer() {
-		return (Entity_player)getByIndex(0, "mobile");
+		return (Entity_player)getByIndex(0);
 	}
 	
-	private static ArrayList<Entity> getSet(String name) {
-		ArrayList<Entity> table;
-		if(name == "mobile")
-			table = mobile_ents;
-		else if (name == "item")
-			table = item_ents;
-		else if (name == "environment")
-			table = env_ents;
-		else if (name == "tile")
-			table = tile_ents;
-		else
-			table = mobile_ents;
-		return table;
-	}
 	
 	public static void draw(String setname) {
-		ArrayList<Entity> ent_list = getSet(setname);
-		for(int i = 0; i < ent_list.size(); i++) {
-			ent_list.get(i).draw();
+		for(int i = 0; i < entityTable.size(); i++) {
+			entityTable.get(i).draw();
 		}
 	}
 	
 	public static void update() {
-		for(int i = 0; i < mobile_ents.size(); i++) {
-			mobile_ents.get(i).update();
+		for(int i = 0; i < entityTable.size(); i++) {
+			entityTable.get(i).update();
 		}
 	}
 	

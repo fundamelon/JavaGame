@@ -200,10 +200,12 @@ public class Layer {
 					
 					int tileOffsetY = set.tileHeight - mapTileHeight;
 					
-					if(!main.GameBase.shading)
-						set.tiles.renderInUse(x+(tx*set.tileWidth), y+(ty*set.tileHeight), sheetX, sheetY);
-					else
-						set.tiles.renderInUseShaded(x+(tx*mapTileWidth), y+(ty*mapTileHeight)-tileOffsetY, sheetX, sheetY);
+					if(main.GameBase.mapRendering) {
+						if(!main.GameBase.shading)
+							set.tiles.renderInUse(x+(tx*set.tileWidth), y+(ty*set.tileHeight), sheetX, sheetY);
+						else
+							set.tiles.renderInUseShaded(x+(tx*mapTileWidth), y+(ty*mapTileHeight)-tileOffsetY, sheetX, sheetY);
+					}
 				}
 			}
 			

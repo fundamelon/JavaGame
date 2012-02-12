@@ -5,9 +5,9 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import main.depreciated.ParticleEmitter;
 import main.entity.Entity;
 import main.entity.EntityManager;
+import main.entity.Entity_player;
 import main.particles.*;
 import main.pathfinding.*;
 
@@ -30,8 +30,6 @@ public class GraphicsManager {
 	
 	static Image[] texture;
 	static GameBase panel;
-	public static ParticleEmitter emitters[] = new ParticleEmitter[1000];
-	public static ParticleEmitter emitter_dump[] = new ParticleEmitter[emitters.length];
 	public static org.newdawn.slick.particles.ParticleSystem particle_system_fire;
 	public static org.newdawn.slick.particles.ParticleSystem particle_system_smoke;
 	private static int sparkct = 0, particle_count = 0;
@@ -46,37 +44,28 @@ public class GraphicsManager {
 	private static boolean debug = false;
 	
 	/**
-	 * Initializes the object and loads images.
-	 * @param transPanel - the instance of GameBase to be used
+	 * Initialize state
 	 */
-	public static void init() {
-	//	mapRenderer = new OrthogonalRenderer(GameBase.getZone().getData());
-		
-		//Empty for now.  We'll see about it later.
-		texture = new Image[10];
-		
+	public static void init() {		
 		try {
 			particle_system_fire = new ParticleSystem(new Image("lib/img/particle/flamelrg_02.tga"));
 			particle_system_smoke = new ParticleSystem(new Image("lib/img/particle/smoke_02.tga"));
-		//	particle_system_fire = new ParticleSystem(new Image("src/org/newdawn/slick/data/particle.tga"));
-		//	particle_system_fire = new ParticleSystem(new Image("lib/img/Angry_Birds_promo_art.png"));
 		} catch (SlickException e) {
 			e.printStackTrace();
 		}
 		
 		particle_system_smoke.setBlendingMode(ParticleSystem.BLEND_COMBINE);
 		particle_system_fire.setBlendingMode(ParticleSystem.BLEND_ADDITIVE);
-		
 	}
 	
 	
 	
 	/**
 	 * Main function that redraws all graphics on a GameBase.
-	 * @param g - Graphics context
-	 * @param panel - the GameBase to draw on
+	 * @param g - graphics context
+	 * @param delta - update delta
 	 */
-	public static void renderMain(Graphics g, int delta) {
+	public static void renderGame(Graphics g, int delta) {
 		Color oldCol;
 		oldCol = g.getColor();
 		g.setColor(Color.white);
@@ -88,9 +77,7 @@ public class GraphicsManager {
 		
 		renderMap(g);
 		
-		for(Rectangle r : GameBase.getZone().buildCollisionArray()) 
-			if(r!=null)
-				g.draw(r);
+		
 		
 		
 		//Set the camera to follow the player with the players coordinates, then update the camera.
@@ -101,31 +88,38 @@ public class GraphicsManager {
 		g.translate(-Camera.getAnchorX(), -Camera.getAnchorY());
 
 		if(debug) {
+			for(Rectangle r : GameBase.getZone().getCollisionArray()) {
+				if(r != null) {
+					g.draw(r);
+				}
+			}
+			
 		//	AIManager.renderNodeMap(g);
 			new AStarHeuristic(AIManager.getNodeMap()).createPath().render(g);
 		}
 		
-		renderEffects(g);
 		renderEntities(g);
 		
 		particle_system_smoke.render();
 		particle_system_fire.render();
+
 		
 		g.translate(Camera.getAnchorX(), Camera.getAnchorY());
 		
 		if(debug) {
-			if(ControlManager.mouseButtonDown(0)) {
-				g.setColor(Color.white);
-				float[] xArr = ControlManager.getMouseTraceXArr();
-				float[] yArr = ControlManager.getMouseTraceYArr();
-				for(int i = 0; i < ControlManager.getMouseTraceLength()-1; i++) {
-					if(xArr[i+1] != 0)
-						g.drawLine(xArr[i], GameBase.getHeight() - yArr[i], xArr[i+1], GameBase.getHeight() - yArr[i+1]);
-				}
+			if(ControlManager.mouseButtonStatus(ControlManager.mousePrimary)) {
+				
+//				g.setColor(Color.white);
+//				float[] xArr = ControlManager.getMouseTraceXArr();
+//				float[] yArr = ControlManager.getMouseTraceYArr();
+//				for(int i = 0; i < ControlManager.getMouseTraceLength()-1; i++) {
+//					if(xArr[i+1] != 0)
+//						g.drawLine(xArr[i], GameBase.getHeight() - yArr[i], xArr[i+1], GameBase.getHeight() - yArr[i+1]);
+//				}
 				g.setColor(Color.red);
 				
 	
-				if(ControlManager.mouseButtonClick(0)) {
+				if(ControlManager.mouseButtonClicked(ControlManager.mousePrimary)) {
 					for(int i = 0; i < 5; i++) {
 						particle_system_smoke.addEmitter(new Emitter_SmokeMed());
 						particle_system_smoke.getEmitter(particle_system_smoke.getEmitterCount()-1).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
@@ -141,7 +135,7 @@ public class GraphicsManager {
 			}
 			
 	
-			if(ControlManager.mouseButtonDown(1)) {
+			if(ControlManager.mouseButtonStatus(ControlManager.mouseSecondary)) {
 				int tileX = GameBase.getZone().getTileAtX(toWorldX(ControlManager.getMouseX()));
 				int tileY = GameBase.getZone().getTileAtY(toWorldY(ControlManager.getMouseY()));
 				Color oldColor = g.getColor();
@@ -183,58 +177,31 @@ public class GraphicsManager {
 	
 	public static void renderMainMenu(Graphics g) {	}
 	
-	/**
-	 * Create a burst of particles at this location!
-	 */
-	public static void createParticleShower() {
-		int x = (int)ControlManager.getMouseX();
-		int y = (int)ControlManager.getMouseY();
-		// It goes X, Y, Amount, speed X/Y, drag X/Y (0.8 to 0.99 is good), fade rate, repeater (broked), float boolean, color (optional)if(sparkct == emitters.length-1) 
-		if(sparkct == emitters.length-1) 
-			sparkct = 0;
-		else
-			sparkct++;
-		emitters[sparkct] = new ParticleEmitter(100, (int)toLocalX(x), (int)toLocalY(y));
-		emitters[sparkct].setSize(5);
-		
-		
-		if(sparkct == emitters.length-1) 
-			sparkct = 0;
-		else
-			sparkct++;
-	}
 	
 	public static ParticleSystem getParticleSystemFire() {
 		return particle_system_fire;
 	}
-	
-	public static float getEmitterX(ParticleEmitter em) {
-		return em.getX();
-	}
-	
-	public static float getEmitterY(ParticleEmitter em) {
-		return em.getY();
-	}
-	
 	public static void renderEntities(Graphics g) {
-		for(int i = 0; i < EntityManager.getTableLength("mobile"); i++) {
-			Entity curEnt = EntityManager.getByIndex(i, "mobile");
-			g.draw(new Rectangle(100, 100, 100, 100));
-			
-			if(debug) 
-				g.draw(curEnt.getBounds());
-			
-			Image shadow = curEnt.getShadowCasterImg();		
-			g.pushTransform();
-			
-			float x = curEnt.getX() - shadow.getWidth()/2, y = curEnt.getY() - shadow.getHeight()/2;
-			
-			g.scale(1, -0.4f);
-			shadow.setAlpha(0.3f);
-			shadow.draw(x-33+curEnt.getImgOffsetX(), -y/0.4f - 370 + curEnt.getImgOffsetY(), shadow.getWidth(), shadow.getHeight(), 0, 40, Color.black);
-			g.popTransform();
-			shadow.setAlpha(1);
-			g.drawImage(curEnt.getImg(), x + curEnt.getImgOffsetX(), y + curEnt.getImgOffsetY());
+		for(int i = 0; i < EntityManager.getTableLength(); i++) {
+			Entity curEnt = EntityManager.getByIndex(i);
+			if(curEnt instanceof Entity_player) {
+				curEnt = (Entity_player)curEnt;
+				
+				if(debug) 
+					g.draw(curEnt.getBounds());
+				
+				Image shadow = curEnt.getShadowCasterImg();		
+				g.pushTransform();
+				
+				float x = curEnt.getX() - shadow.getWidth()/2, y = curEnt.getY() - shadow.getHeight()/2;
+				
+				g.scale(1, -0.4f);
+				shadow.setAlpha(0.3f);
+				shadow.draw(x-33+curEnt.getImgOffsetX(), -y/0.4f - 370 + curEnt.getImgOffsetY(), shadow.getWidth(), shadow.getHeight(), 0, 40, Color.black);
+				g.popTransform();
+				shadow.setAlpha(1);
+				g.drawImage(curEnt.getImg(), x + curEnt.getImgOffsetX(), y + curEnt.getImgOffsetY());
+			}
 		}
 	}
 	
@@ -259,16 +226,6 @@ public class GraphicsManager {
 			g.drawString(text, (int)x, (int)y);
 	}
 	
-	/**
-	 * Update particles; if particles are in front throw them on different list
-	 * @param g2 - Graphics2D context
-	 */
-	public static void renderEffects(Graphics g) {
-		for(int i = 0; i < emitters.length; i++) {
-			if(emitters[i] != null) 
-				emitters[i].render(g, GameBase.getDelta());
-		}
-	}
 	
 	/**
 	 * Simple grid drawing algorithm
@@ -319,19 +276,6 @@ public class GraphicsManager {
 			else
 				overlayCol = new Color(overlayCol.getRed(), overlayCol.getGreen(), overlayCol.getBlue(), 255);
 		}
-	}
-	
-	/**
-	 * Ask each emitter to total its particles, then total that to get number of all particles.
-	 * @return Total particle count
-	 */
-	public static int getParticleCount() {
-		particle_count = 0;
-		for(int i = 0; i < emitters.length; i++) {
-			if(emitters[i] != null)
-				particle_count += emitters[i].getParticleCount();
-		}
-		return particle_count;
 	}
 	
 	/**

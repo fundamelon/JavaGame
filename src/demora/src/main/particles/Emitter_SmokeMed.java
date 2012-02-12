@@ -1,5 +1,5 @@
 package main.particles;
-import main.ControlManager;
+import main.*;
 
 import org.newdawn.slick.Image;
 import org.newdawn.slick.particles.*;
@@ -11,7 +11,7 @@ public class Emitter_SmokeMed implements ParticleEmitter {
 	private int y;
 	
 	/** The particle emission rate */
-	private int interval = 60;
+	private int interval = 30;
 	/** Time til the next particle */
 	private int timer;
 	/** The size of the initial particles */
@@ -57,12 +57,12 @@ public class Emitter_SmokeMed implements ParticleEmitter {
 		variation_timer += delta;
 		if (timer <= 0) {
 			timer = interval;
-			Particle p = system.getNewParticle(this, 2000);
-			p.setColor(1f, 1f, 1f, 0.06f);
-			p.setPosition(x, y);
+			Particle p = system.getNewParticle(this, 3000);
+			p.setColor(0.8f, 0.8f, 0.8f, 0.07f + (float)(Math.random()*0.01f));
+			p.setPosition(x + (float)(Math.random() * 10f), y);
 			p.setSize(size*2f);
-			float vx = (float) (-0.01f + (Math.random() * 0.02f)) + (float)Math.sin(variation_timer * 0.0003 + Math.sin(variation_timer*0.001))*0.01f;
-			float vy = (float) (-(Math.random() * 0.1f)-0.05f);
+			float vx = (float) (-0.005f + (Math.random() * 0.01f)) + (float)Math.sin(variation_timer * 0.0003 + Math.sin(variation_timer*0.001))*0.007f;
+			float vy = (float) (-(Math.random() * 0.05f)-0.03f);
 			
 			
 			p.setVelocity(vx/2, vy/2, 2f);
@@ -74,14 +74,18 @@ public class Emitter_SmokeMed implements ParticleEmitter {
 	 */
 	public void updateParticle(Particle particle, int delta) {
 		if (particle.getLife() > 600) {
-			particle.adjustSize(0.05f * delta);
+			particle.adjustSize(0.02f * delta);
+			particle.adjustColor(0, 0, 0, delta*-0.00003f);
 			
 		} else {
-			particle.adjustSize(0.03f * delta * (size / 40.0f));
-			particle.adjustColor(0,  0, 0, delta*-0.0002f);
+			particle.adjustSize(0.02f * delta * (size / 40.0f));
+			particle.adjustColor(0,  0, 0, delta*-0.02f);
 		}
 		float c = 0.002f * delta;
-		particle.adjustVelocity((float)Math.sin(variation_timer * 0.0003 + Math.sin(variation_timer*0.001))*0.00001f, 0);
+		float vx = (float)Math.sin(variation_timer * 0.0003 + Math.sin(variation_timer*0.001))*0.000001f;
+		float vy = 0;
+		
+		particle.adjustVelocity(vx, vy);
 		
 	}
 	
