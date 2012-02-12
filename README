@@ -1,3 +1,4 @@
 File > Export > Runnable JAR
-Save as src/dist/demora.jar
+Save as src/demora/dist/demora.jar
 Distributable version of game! yay!
+(Won't work if there are warnings)
