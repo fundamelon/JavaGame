@@ -1,5 +1,6 @@
 package main.entity;
 
+import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 
@@ -10,6 +11,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.geom.Circle;
 import org.newdawn.slick.geom.Rectangle;
 
 
@@ -120,33 +122,37 @@ public class Entity_player extends Entity_mobile implements Entity {
 		attempted_bounds.setX(getBounds().getX() + dx);
 		attempted_bounds.setY(getBounds().getY() + dy);
 		Rectangle[] collisionArray = GameBase.getZone().getCollisionArray();
-		for(int i = 0; i < collisionArray.length; i++) {
-		//	Rectangle temp_obs = new Rectangle(100, 100, 100, 100);
-			Rectangle temp_obs = collisionArray[i];
-			if(temp_obs != null) {
-				if(PhysUtil.collision(attempted_bounds, temp_obs)) {
-					isColliding = true;
-					
-					temp_obs.setY(temp_obs.getY() + dy);
-					
-					if(PhysUtil.collision(getBounds(), temp_obs)) {
-						ndx = 0;
-					}
 		
-					temp_obs.setX(temp_obs.getX() + dx);
-					temp_obs.setY(temp_obs.getY() - dy);
-					
-					if(PhysUtil.collision(getBounds(), temp_obs)) {
-						ndy = 0;
-					}
-					
-					temp_obs.setX(temp_obs.getX() - dx);
-					
-					if(	!(	GameBase.getZone().blocked(i - 1) ||
-							GameBase.getZone().blocked(i + 1) ||
-							GameBase.getZone().blocked(i - GameBase.getZone().getWidth()) ||
-							GameBase.getZone().blocked(i + GameBase.getZone().getWidth()))) {
+		if(PhysUtil.collisions) {
+			for(int i = 0; i < collisionArray.length; i++) {
+			//	Rectangle temp_obs = new Rectangle(100, 100, 100, 100);
+				Rectangle temp_obs = collisionArray[i];
 				
+				int cushion; //Keep this value below 8 or it will cause problems
+				if(GameBase.getZone().collisionType(i) == 2) {
+					cushion = 8;
+				} else {
+					cushion = 8;
+				}
+				if(temp_obs != null && Point.distance(getBounds().getCenterX(), getBounds().getCenterY(), temp_obs.getCenterX(), temp_obs.getCenterY()) < bounds.getBoundingCircleRadius()*2-cushion) {
+					if(PhysUtil.collision(attempted_bounds, temp_obs)) {
+						isColliding = true;
+						
+						temp_obs.setY(temp_obs.getY() + dy);
+						
+						if(PhysUtil.collision(getBounds(), temp_obs)) {
+							ndx = 0;
+						}
+			
+						temp_obs.setX(temp_obs.getX() + dx);
+						temp_obs.setY(temp_obs.getY() - dy);
+						
+						if(PhysUtil.collision(getBounds(), temp_obs)) {
+							ndy = 0;
+						}
+						
+						temp_obs.setX(temp_obs.getX() - dx);
+						
 						//If it's within 24 pixels of corner, x movement is blocked,
 						//	and y movement is not zero, then nudge it over
 						//Left edge
@@ -172,7 +178,7 @@ public class Entity_player extends Entity_mobile implements Entity {
 							ndy -= 0.05 * ControlManager.getDelta();
 						}
 						//Bottom edge
-						if(		!GameBase.getZone().blocked(i - GameBase.getZone().getWidth()) &&
+						if(		!GameBase.getZone().blocked(i + GameBase.getZone().getWidth()) &&
 								getBounds().getY() > temp_obs.getY() + temp_obs.getHeight()-24 && 
 								getBounds().getY() <= temp_obs.getMaxY() + temp_obs.getHeight() && 
 								dx != 0 && ndy == 0 && dy >= 0)	{

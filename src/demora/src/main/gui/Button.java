@@ -9,75 +9,84 @@ public class Button implements Clickable{
 	private Rectangle bounds;
 	private int eventKey;
 	private boolean status;
+	private boolean prevStatus;
 	private boolean mouseEntered;
 	private boolean mouseExited;
+	private boolean mouseClicked;
+	private boolean mouseReleased;
 	private boolean mouseOver;
 	private boolean toggleable;
+	private boolean visible = true;
+	
+	private String name;
+	public int id;
 
-	public Button(Rectangle newBounds) {
+	public Button(int newId, String newName, Rectangle newBounds) {
+		name = newName;
+		id = newId;
 		bounds = newBounds;
 	}
 	
-	public Button(float x, float y, float width, float height) {
-		this(new Rectangle(x, y, width, height));
+	public Button(int newId, Rectangle newBounds) {
+		this(newId, ""+newId, newBounds);
 	}
 	
-	public Button() {
-		this(new Rectangle(0, 0, 100, 100));
+	public Button(int newId, float x, float y, float width, float height) {
+		this(newId, new Rectangle(x, y, width, height));
+	}
+	
+	public Button(int newId) { 
+		this(newId, new Rectangle(0, 0, 100, 100));
 	}
 	
 	public void update() {
-		if(mouseHover()) {
-			if(mouseEntered) {
-				mouseEntered = false;
-			} else {
+		if(mouseHover() != mouseOver) {
+			if(mouseHover()) {
 				mouseEntered = true;
-			}
-			
-			if(mouseDown()) {
-				if(toggleable) {
-					status = !status;
-				} else {
-					status = true;
-				}
-			}
-		} else {
-			if(mouseExited) {
-				mouseExited = false;
 			} else {
 				mouseExited = true;
 			}
+			mouseOver = mouseHover();
+		} else {
+			mouseEntered = false;
+			mouseExited = false;
 		}
+		
+		status = mouseDown();		
+		mouseClicked = mouseClick();
 	}
 	
-	public boolean status() {
-		return mouseDown();
+	public boolean isVisible() {
+		return visible;
+	}
+	
+	
+	public boolean getStatus() {
+		return status;
 	}
 	
 	public boolean mouseClick() {
-		return false;
+		return mouseHover() && ControlManager.mouseButtonClicked(ControlManager.mousePrimary);
 	}
-
+	
 	public boolean mouseRelease() {
-		return ControlManager.mouseButtonReleased(ControlManager.mousePrimary);
+		return mouseExited || ControlManager.mouseButtonReleased(ControlManager.mousePrimary);
 	}
-
+	
 	public boolean mouseDown() {
 		return mouseHover() && ControlManager.mouseButtonStatus(ControlManager.mousePrimary);
 	}
-
+	
 	public boolean mouseHover() {
 		return bounds.contains(ControlManager.getMouseX(), ControlManager.getMouseY());
 	}
 
-	public boolean mouseEnter() {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean mouseEnter() {		
+		return mouseEntered;
 	}
 
 	public boolean mouseExit() {
-		// TODO Auto-generated method stub
-		return false;
+		return mouseExited;
 	}
 
 	public Rectangle getBounds() {
@@ -102,6 +111,10 @@ public class Button implements Clickable{
 
 	public void setToggleMode(boolean mode) {
 		toggleable = mode;		
+	}
+
+	public String getName() {
+		return name;
 	}
 
 }

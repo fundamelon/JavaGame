@@ -55,7 +55,9 @@ public class Zone {
 	}
 	
 	public void render(int x, int y) {
-		currentZone.render(x, y);
+		for(int i = 0; i < currentZone.getLayerCount(); i++)
+			if(!(i == currentZone.getLayerIndex("util") && !GameBase.debug_tileUtil))
+				currentZone.render(x, y, i);
 	}
 	
 	public int getTileAtX(float ox) {
@@ -78,6 +80,14 @@ public class Zone {
 		}
 	}
 	
+	public int idToTileX(int id) {
+		return id == 0 ? 0 : id%getWidth();
+	}
+	
+	public int idToTileY(int id) {
+		return id == 0 ? 0 : (int)(id/getHeight());
+	}
+	
 	public Rectangle[] getCollisionArray() {
 		return collisionArray;
 	}
@@ -87,14 +97,18 @@ public class Zone {
 	}
 	
 	public boolean blocked(int x, int y) {
-		return 1 == Integer.parseInt(currentZone.getTileProperty(getData().getTileId(x, y, currentZone.getLayerIndex("util")), "collision", "0"));
+		return 1 == collisionType(x, y);
 	}
 	
 	public boolean blocked(int i) {
-		return blocked((int)(getHeight() / i), i%getWidth());
+		return blocked(idToTileX(i), idToTileY(i));
 	}
-
-	public boolean isCornerTile(int i) {
-		return (blocked(i-1) && blocked(i+1));
+	
+	public int collisionType(int x, int y) {
+		return Integer.parseInt(currentZone.getTileProperty(getData().getTileId(x, y, currentZone.getLayerIndex("util")), "collision", "0"));
+	}
+	
+	public int collisionType(int i) {
+		return collisionType(idToTileX(i), idToTileY(i));
 	}
 }

@@ -30,14 +30,17 @@ public class GameBase {
 	 * 1: Game view
 	 * 2: Console
 	 */
-	public static int viewMode = 1;
+	public static int viewMode = 0;
 	
 	public static final int VIEW_MENU = 0;
 	public static final int VIEW_GAME = 1;
 	public static final int VIEW_CONS = 2;
 	
-	public static boolean debug_keyboard = false;
-	public static boolean debug_mouse = false;
+	public static boolean debug_keyboard = 	false;
+	public static boolean debug_mouse = 	false;
+	public static boolean debug_graphics = 	false;
+	public static boolean debug_menu = 		false;
+	public static boolean debug_tileUtil = 	false;
 	
 	/** time at last frame */
 	static long lastFrame;
@@ -46,6 +49,8 @@ public class GameBase {
 	static int fps;
 	/** last fps time */
 	static long lastFPS;
+	/** current fps value*/
+	static int thisFPS;
 	
 	static boolean vsync;
 	public static boolean shading;
@@ -74,13 +79,14 @@ public class GameBase {
 		ControlManager.init();
 		EntityManager.init();
 		AIManager.init();
+		GUIManager.init();
 
 		initGL();
 		
 		AIManager.generateNodeMap(32, 64, 64);
 		
 	//	shading = true;
-		GraphicsManager.setDebugMode(true);
+		GraphicsManager.setDebugMode(debug_graphics);
 		
 	//	shader = new Shader("src/shader/screen.vert", "src/shader/screen.frag");
 		
@@ -91,13 +97,14 @@ public class GameBase {
 		while (!Display.isCloseRequested()) {
 			int delta = getDelta();
 
+			Display.setTitle("Demora (Testbed) FPS: " + thisFPS + "  Particles: "+GraphicsManager.getParticleCount());
 			
 			update(delta);
 			render(g, delta);
 
 			Display.update();
 			g.clear();
-		//	Display.sync(60); // cap fps to 60fps
+			Display.sync(60); // cap fps to 60fps
 		}
 
 		Display.destroy();
@@ -122,12 +129,14 @@ public class GameBase {
 		
 		if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
 			System.exit(0);
-			
 
-		if(viewMode == VIEW_GAME) {
-			ControlManager.update(delta);
+		ControlManager.update(delta);
+		
+		if(viewMode == VIEW_MENU) {
+			GUIManager.update();
+		} else if(viewMode == VIEW_GAME) {
 			EntityManager.update();
-		}
+		} 
 		
 		updateFPS(); // update FPS Counter
 	}
@@ -196,7 +205,7 @@ public class GameBase {
 	    long time = getTime();
 	    int delta = (int) (time - lastFrame);
 	    lastFrame = time;
-	 
+	    
 	    return delta;
 	}
 	
@@ -214,7 +223,7 @@ public class GameBase {
 	 */
 	public static void updateFPS() {
 		if (getTime() - lastFPS > 1000) {
-			Display.setTitle("FPS: " + fps);
+			thisFPS = fps;
 			fps = 0;
 			lastFPS += 1000;
 		}
@@ -237,6 +246,7 @@ public class GameBase {
 	//	shader.activate();
 		switch(viewMode) {
 		case VIEW_MENU:
+			GUIManager.render(g, delta);
 			break;
 		case VIEW_GAME:
 	        g.setDrawMode(Graphics.MODE_NORMAL);

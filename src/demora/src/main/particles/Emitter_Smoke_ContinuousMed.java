@@ -4,7 +4,7 @@ import main.*;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.particles.*;
 
-public class Emitter_SmokeMed implements ParticleEmitter {
+public class Emitter_Smoke_ContinuousMed implements ParticleEmitter {
 	/** The x coordinate of the center of the fire effect */
 	private int x;
 	/** The y coordinate of the center of the fire effect */
@@ -22,7 +22,7 @@ public class Emitter_SmokeMed implements ParticleEmitter {
 	/**
 	 * Create a default fire effect at 0,0
 	 */
-	public Emitter_SmokeMed() {
+	public Emitter_Smoke_ContinuousMed() {
 	}
 
 	/**
@@ -31,7 +31,7 @@ public class Emitter_SmokeMed implements ParticleEmitter {
 	 * @param x The x coordinate of the fire effect
 	 * @param y The y coordinate of the fire effect
 	 */
-	public Emitter_SmokeMed(int x, int y) {
+	public Emitter_Smoke_ContinuousMed(int x, int y) {
 		this.x = x;
 		this.y = y;
 	}
@@ -43,7 +43,7 @@ public class Emitter_SmokeMed implements ParticleEmitter {
 	 * @param y The y coordinate of the fire effect
 	 * @param size The size of the particle being pumped out
 	 */
-	public Emitter_SmokeMed(int x, int y, float size) {
+	public Emitter_Smoke_ContinuousMed(int x, int y, float size) {
 		this.x = x;
 		this.y = y;
 		this.size = size;

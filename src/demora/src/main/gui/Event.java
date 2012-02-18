@@ -1,5 +1,7 @@
 package main.gui;
 
+import main.GameBase;
+
 public class Event {
 	public static final int GAME_QUIT = 0;
 	public static final int GAME_START = 1;
@@ -13,7 +15,7 @@ public class Event {
 			//TODO: Quit the game
 			break;
 		case GAME_START:
-			//TODO: Switch modes
+			GameBase.viewMode = GameBase.VIEW_GAME;
 			break;
 		case GAME_PAUSE:
 			//TODO: Pause game

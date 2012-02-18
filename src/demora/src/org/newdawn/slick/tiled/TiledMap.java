@@ -211,7 +211,7 @@ public class TiledMap {
 	public int getTileWidth() {
 		return tileWidth;
 	}
-	   
+	
 	/**
 	 * Get the global ID of a tile at specified location in the map
 	 * 

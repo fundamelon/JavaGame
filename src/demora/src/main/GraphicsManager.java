@@ -5,6 +5,8 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import javax.imageio.ImageIO;
+
 import main.entity.Entity;
 import main.entity.EntityManager;
 import main.entity.Entity_player;
@@ -22,6 +24,7 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.geom.Circle;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.particles.ParticleSystem;
@@ -32,6 +35,7 @@ public class GraphicsManager {
 	static GameBase panel;
 	public static org.newdawn.slick.particles.ParticleSystem particle_system_fire;
 	public static org.newdawn.slick.particles.ParticleSystem particle_system_smoke;
+	public static org.newdawn.slick.particles.ParticleSystem particle_system_magic;
 	private static int sparkct = 0, particle_count = 0;
 	private static int fps_lag;
 	public static boolean first_run = true;
@@ -50,15 +54,15 @@ public class GraphicsManager {
 		try {
 			particle_system_fire = new ParticleSystem(new Image("lib/img/particle/flamelrg_02.tga"));
 			particle_system_smoke = new ParticleSystem(new Image("lib/img/particle/smoke_02.tga"));
+			particle_system_magic = new ParticleSystem(new Image("lib/img/particle/flamelrg_02.tga"));
 		} catch (SlickException e) {
 			e.printStackTrace();
 		}
 		
 		particle_system_smoke.setBlendingMode(ParticleSystem.BLEND_COMBINE);
 		particle_system_fire.setBlendingMode(ParticleSystem.BLEND_ADDITIVE);
+		particle_system_magic.setBlendingMode(ParticleSystem.BLEND_ADDITIVE);
 	}
-	
-	
 	
 	/**
 	 * Main function that redraws all graphics on a GameBase.
@@ -97,16 +101,14 @@ public class GraphicsManager {
 		//	AIManager.renderNodeMap(g);
 			new AStarHeuristic(AIManager.getNodeMap()).createPath().render(g);
 		}
-		
-		renderEntities(g);
-		
-		particle_system_smoke.render();
-		particle_system_fire.render();
+
 
 		
-		g.translate(Camera.getAnchorX(), Camera.getAnchorY());
 		
 		if(debug) {
+			Entity_player player = EntityManager.getPlayer();
+			g.draw(new Circle(player.getBounds().getCenterX(), player.getBounds().getCenterY(), player.getBounds().getBoundingCircleRadius()+4));
+			
 			if(ControlManager.mouseButtonStatus(ControlManager.mousePrimary)) {
 				
 //				g.setColor(Color.white);
@@ -118,23 +120,16 @@ public class GraphicsManager {
 //				}
 				g.setColor(Color.red);
 				
-	
-				if(ControlManager.mouseButtonClicked(ControlManager.mousePrimary)) {
-					for(int i = 0; i < 5; i++) {
-						particle_system_smoke.addEmitter(new Emitter_SmokeMed());
-						particle_system_smoke.getEmitter(particle_system_smoke.getEmitterCount()-1).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
-					}
-					for(int i = 0; i < 5; i++) {
-						particle_system_fire.addEmitter(new Emitter_FireMed());
-						particle_system_fire.getEmitter(particle_system_fire.getEmitterCount()-1).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
-					}
-				}
+				
+				
 			//	for(int i = 0; i < particle_system_fire.getEmitterCount(); i++) {
 			//		particle_system_fire.getEmitter(i).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
 			//	}
 			}
 			
-	
+			
+			
+			
 			if(ControlManager.mouseButtonStatus(ControlManager.mouseSecondary)) {
 				int tileX = GameBase.getZone().getTileAtX(toWorldX(ControlManager.getMouseX()));
 				int tileY = GameBase.getZone().getTileAtY(toWorldY(ControlManager.getMouseY()));
@@ -145,16 +140,50 @@ public class GraphicsManager {
 				System.out.println("ID: "+(GameBase.getZone().getData().getTileId(tileX, tileY, 2)));
 			}
 			
-			g.drawRect(ControlManager.getMouseX() - 8,  ControlManager.getMouseY() - 8, 16, 16);
+			g.drawRect(toWorldX(ControlManager.getMouseX() - 8),  toWorldY(ControlManager.getMouseY() - 8), 16, 16);
+
+			if(ControlManager.mouseButtonClicked(ControlManager.mousePrimary)) {
+				for(int i = 0; i < 5; i++) {
+					particle_system_smoke.addEmitter(new Emitter_Smoke_ContinuousMed());
+					particle_system_smoke.getEmitter(particle_system_smoke.getEmitterCount()-1).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
+				}
+				for(int i = 0; i < 5; i++) {
+					particle_system_fire.addEmitter(new Emitter_FireMed());
+					particle_system_fire.getEmitter(particle_system_fire.getEmitterCount()-1).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
+				}
+			}
+			
+			if(ControlManager.mouseButtonClicked(ControlManager.mouseSecondary)) {
+				System.out.println("clicky");
+				for(int i = 0; i < 5; i++) {
+					particle_system_magic.addEmitter(new Emitter_Magic_BallMed());
+					particle_system_magic.getEmitter(particle_system_magic.getEmitterCount()-1).setPos(toWorldX(ControlManager.getMouseX()), toWorldY(ControlManager.getMouseY()));
+				}
+			}
 		}
+		
+		for(int i = 0; i < particle_system_magic.getEmitterCount(); i++) {
+			particle_system_magic.getEmitter(i).setPos(EntityManager.getPlayer().getX(), EntityManager.getPlayer().getY() + 16);
+		}
+		
+
+		renderEntities(g);
+		
+		particle_system_smoke.update(delta);
+		particle_system_fire.update(delta);
+		particle_system_magic.update(delta);
+		
+		particle_system_smoke.render();
+		particle_system_fire.render();
+		particle_system_magic.render();
+		
+
+		g.translate(Camera.getAnchorX(), Camera.getAnchorY());
+		
 		
 		g.setColor(oldCol);
 		
-		
-		particle_system_fire.update(delta);
-		particle_system_smoke.update(delta);
-		
-		if(Keyboard.isKeyDown(Keyboard.KEY_F2) && !Keyboard.isRepeatEvent()) {
+		if(ControlManager.keyPressed(Keyboard.KEY_F2)) {
 			
 			ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
 			GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer );
@@ -170,6 +199,12 @@ public class GraphicsManager {
 					int b = buffer.get(i + 2) & 0xFF;
 					image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g1 << 8) | b);
 				}
+			try {
+				ImageIO.write(image, "PNG", new File("lib/img/screencapture.png"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 			
 			System.out.println("Saved screenshot");
 		}
@@ -226,6 +261,12 @@ public class GraphicsManager {
 			g.drawString(text, (int)x, (int)y);
 	}
 	
+	/**Tally up all the particles
+	 * 
+	 */
+	public static int getParticleCount() {
+		return particle_system_smoke.getParticleCount() + particle_system_fire.getParticleCount();
+	}
 	
 	/**
 	 * Simple grid drawing algorithm
